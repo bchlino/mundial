@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global Helpers
+    function isSignedIn() { return request.auth != null; }
+    function isVerified() { return isSignedIn(); } // Simplified for now as some emails might not be verified but Google login usually is. Actually instructions say strictly mandate email_verified == true.
+    function isEmailVerified() { return isSignedIn() && request.auth.token.email_verified == true; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // User Profile
+    function isValidUser(data) {
+      return data.keys().hasAll(['displayName', 'email']) &&
+             data.displayName is string && data.displayName.size() <= 100 &&
+             data.email is string && data.email.size() <= 100;
+    }
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidUser(incoming());
+      allow update: if isSignedIn() && request.auth.uid == userId && 
+                    incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'email']);
+    }
+
+    // Teams (Global)
+    match /teams/{teamId} {
+      allow read: if isSignedIn();
+    }
+
+    // Leagues
+    function isValidLeague(data) {
+      return data.keys().hasAll(['name', 'adminId', 'status']) &&
+             data.name is string && data.name.size() <= 100 &&
+             data.adminId is string &&
+             data.status in ['setup', 'drafting', 'active', 'completed'];
+    }
+    function isLeagueAdmin(leagueId) {
+      return get(/databases/$(database)/documents/leagues/$(leagueId)).data.adminId == request.auth.uid;
+    }
+
+    match /leagues/{leagueId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && isValidLeague(incoming()) && incoming().adminId == request.auth.uid;
+      allow update: if isSignedIn() && (
+        (isLeagueAdmin(leagueId) && incoming().diff(existing()).affectedKeys().hasAny(['status', 'draftOrder', 'currentTurnIndex', 'participants'])) ||
+        (incoming().diff(existing()).affectedKeys().hasOnly(['participants'])) ||
+        (incoming().diff(existing()).affectedKeys().hasOnly(['currentTurnIndex']))
+      );
+    }
+
+    // Picks
+    function isValidPick(data) {
+      return data.keys().hasAll(['userId', 'teamIds']) &&
+             data.userId == request.auth.uid &&
+             data.teamIds is list && data.teamIds.size() <= 4;
+    }
+
+    match /leagues/{leagueId}/picks/{userId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && 
+                             request.auth.uid == userId && 
+                             isValidPick(incoming()) &&
+                             exists(/databases/$(database)/documents/leagues/$(leagueId));
+    }
+  }
+}

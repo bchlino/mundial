@@ -1,0 +1,59 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "App user profile",
+      "type": "object",
+      "properties": {
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "photoURL": { "type": "string" }
+      },
+      "required": ["displayName", "email"]
+    },
+    "Team": {
+      "title": "National Team",
+      "description": "A country participating in the World Cup",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "flag": { "type": "string" },
+        "pot": { "type": "string", "enum": ["A", "B", "C", "D"] }
+      },
+      "required": ["name", "flag", "pot"]
+    },
+    "League": {
+      "title": "Draft League",
+      "description": "A group of colleagues playing together",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "adminId": { "type": "string" },
+        "status": { "type": "string", "enum": ["setup", "drafting", "active", "completed"] },
+        "currentTurnIndex": { "type": "integer" },
+        "draftOrder": { "type": "array", "items": { "type": "string" } },
+        "participants": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "adminId", "status"]
+    },
+    "Pick": {
+      "title": "User Pick",
+      "description": "Teams selected by a user in a league",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "teamIds": { "type": "array", "items": { "type": "string" } },
+        "tapadoId": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "teamIds"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": { "schema": "User", "description": "Global user profiles" },
+    "/teams/{teamId}": { "schema": "Team", "description": "Global list of teams" },
+    "/leagues/{leagueId}": { "schema": "League", "description": "League metadata and state" },
+    "/leagues/{leagueId}/picks/{userId}": { "schema": "Pick", "description": "Selections for each user in the league" }
+  }
+}
