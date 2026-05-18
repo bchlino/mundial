@@ -182,6 +182,7 @@ function AppContent() {
   };
 
   const currentLeague = leagues.find((league: LeagueData) => league.id === selectedLeagueId) || null;
+  const adminLeaguesCount = leagues.filter((league: LeagueData) => league.adminId === user?.uid).length;
 
   if (loading || leaguesLoading || picksLoading) {
     return (
@@ -207,6 +208,32 @@ function AppContent() {
     <div className="min-h-screen bg-[#F5F2ED] text-[#1A1A1A] selection:bg-[#FF3E00]/20">
       <Header activeLeagueId={selectedLeagueId} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="mb-10 border-4 border-black bg-white p-6">
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-2">Create private league</p>
+          <p className="text-xs font-black uppercase tracking-widest opacity-60 mb-4">
+            Admin leagues: {adminLeaguesCount}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              value={newLeagueName}
+              onChange={(event) => setNewLeagueName(event.target.value)}
+              placeholder={`Liga Mundial ${profile?.displayName || 'Mi Grupo'}`}
+              className="flex-1 border-4 border-black p-4 text-sm font-black uppercase tracking-wider focus:outline-none"
+            />
+            <button
+              onClick={handleCreateLeague}
+              disabled={isCreatingLeague || !newLeagueName.trim()}
+              className="bg-black text-white px-6 py-4 text-sm font-black uppercase tracking-widest hover:bg-[#FF3E00] transition-all disabled:opacity-50"
+            >
+              {isCreatingLeague ? 'Creating League...' : 'Create League'}
+            </button>
+          </div>
+          {createError && (
+            <p className="mt-3 text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{createError}</p>
+          )}
+        </div>
+
         {leagues.length > 1 && (
           <div className="mb-10 border-4 border-black bg-white p-6">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-4">Select your league</p>
@@ -254,35 +281,9 @@ function AppContent() {
                      <p className="text-xs font-black uppercase tracking-widest">{inviteError}</p>
                    </div>
                  )}
-
-                 <div className="space-y-4 text-left">
-                   <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Create private league</p>
-                   <input
-                     type="text"
-                     value={newLeagueName}
-                     onChange={(event) => setNewLeagueName(event.target.value)}
-                     placeholder={`Liga Mundial ${profile?.displayName || 'Mi Grupo'}`}
-                     className="w-full border-4 border-black p-4 text-sm font-black uppercase tracking-wider focus:outline-none"
-                   />
-
-                   {createError && (
-                     <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{createError}</p>
-                   )}
-
-                   <button
-                     onClick={handleCreateLeague}
-                     disabled={isCreatingLeague || !newLeagueName.trim()}
-                     className="w-full bg-black text-white py-5 text-sm font-black uppercase tracking-widest hover:bg-[#FF3E00] transition-all disabled:opacity-50"
-                   >
-                     {isCreatingLeague ? 'Creating League...' : 'Create Private League'}
-                   </button>
-
-                   {urlLeagueId && !isJoiningInviteLeague && !inviteError && (
-                     <p className="text-[10px] font-black uppercase tracking-widest opacity-60">
-                       If this invite is valid, you will be added only to that league.
-                     </p>
-                   )}
-                 </div>
+                 <p className="text-[10px] font-black uppercase tracking-widest opacity-60">
+                   Use the create form above to start a new private league.
+                 </p>
                </div>
              </motion.div>
           ) : !userPicks || (userPicks.teamIds || []).length < 4 ? (
