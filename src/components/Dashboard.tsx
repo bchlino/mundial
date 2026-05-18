@@ -74,7 +74,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
            
            {!myPicks?.tapadoId && myTeams.length === 4 && (
              <div className="bg-[#FF3E00] text-white px-4 py-2 text-[10px] font-black uppercase tracking-widest animate-pulse">
-                Selection Pending: Mark Wildcard ⭐
+                        Seleccion pendiente: marca tu tapado (Selection pending: mark wildcard) ⭐
              </div>
            )}
         </div>
@@ -95,19 +95,19 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                </div>
 
                <div className="text-6xl mb-8 group-hover:scale-110 transition-transform origin-left">{team.flag}</div>
-               <span className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1 block">National Tier</span>
+               <span className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1 block">Nivel nacional (National tier)</span>
                <h3 className="text-4xl font-serif italic font-black uppercase mb-8 leading-none">{team.name}</h3>
                
                <div className="mt-auto pt-6 border-t-2 border-black/10">
                  <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest mb-4">
-                    <span className="opacity-40">Accrued Points</span>
+                    <span className="opacity-40">Puntos acumulados (Accrued points)</span>
                     <span className={cn(myPicks?.tapadoId === team.id ? "text-[#FF3E00]" : "text-black")}>00.00</span>
                  </div>
                  
                  {myPicks?.tapadoId === team.id ? (
                    <div className="flex items-center gap-2 text-[#FF3E00] font-black text-[10px] uppercase tracking-widest bg-white/10 p-2 border border-white/20">
                       <Star className="w-4 h-4 fill-current" />
-                      <span>The Wildcard</span>
+                                 <span>El tapado (Wildcard)</span>
                    </div>
                  ) : (
                    <button 
@@ -120,7 +120,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                         : "hover:bg-[#FF3E00] hover:text-white"
                      )}
                    >
-                     Assign Wildcard
+                               Asignar tapado (Assign wildcard)
                    </button>
                  )}
                </div>
@@ -138,7 +138,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                 <div className="w-12 h-12 border-2 border-black/20 flex items-center justify-center">
                    <Users className="w-6 h-6 opacity-20" />
                 </div>
-                <p className="text-[10px] font-black uppercase tracking-widest opacity-20">Slot Pending // Finalize Selection</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest opacity-20">Espacio pendiente // Finaliza tu seleccion (Slot pending)</p>
              </div>
            ))}
         </div>
@@ -149,7 +149,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
          <div className="flex items-center justify-between mb-8 pb-4 border-b-2 border-black/10">
             <h2 className="text-3xl font-serif italic font-black uppercase flex items-center gap-4">
                <span className="bg-black text-white w-10 h-10 flex items-center justify-center not-italic font-sans text-xl">L</span>
-               Leaderboard
+               Clasificacion (Leaderboard)
             </h2>
             <div className="flex border-2 border-black bg-white overflow-hidden">
                <button 
@@ -192,7 +192,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                           <h4 className="font-serif italic text-2xl leading-none">
                              {users[uid]?.displayName}
                           </h4>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">00.00 PUNTOS</p>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">00.00 PUNTOS (POINTS)</p>
                        </div>
                     </div>
 
@@ -218,13 +218,13 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
               <table className="w-full text-left font-sans">
                  <thead>
                     <tr className="bg-black text-white text-[10px] font-black uppercase tracking-[0.2em]">
-                       <th className="px-8 py-4">Rank</th>
-                       <th className="px-8 py-4">Personnel</th>
-                       <th className="px-8 py-4">Tier A</th>
-                       <th className="px-8 py-4">Tier B</th>
-                       <th className="px-8 py-4">Tier C</th>
-                       <th className="px-8 py-4">Tier D</th>
-                       <th className="px-8 py-4 text-right">Aggregate</th>
+                       <th className="px-8 py-4">Posicion (Rank)</th>
+                       <th className="px-8 py-4">Jugador (Player)</th>
+                       <th className="px-8 py-4">Bombo (Tier) A</th>
+                       <th className="px-8 py-4">Bombo (Tier) B</th>
+                       <th className="px-8 py-4">Bombo (Tier) C</th>
+                       <th className="px-8 py-4">Bombo (Tier) D</th>
+                       <th className="px-8 py-4 text-right">Total (Aggregate)</th>
                     </tr>
                  </thead>
                  <tbody className="divide-y-2 divide-black/10">
@@ -284,27 +284,27 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
       <div className="bg-black text-white p-12 border-l-[16px] border-[#FF3E00] flex flex-col md:flex-row items-center gap-12 relative overflow-hidden">
          <div className="absolute top-0 right-0 opacity-5 text-9xl font-serif font-black italic select-none">RULES</div>
          <div className="flex-1 relative z-10">
-            <h3 className="text-xs font-black uppercase tracking-[0.5em] mb-6 opacity-60">The Scoring Matrix // 2026 Edition</h3>
+            <h3 className="text-xs font-black uppercase tracking-[0.5em] mb-6 opacity-60">Matriz de puntuacion (Scoring matrix) // Edicion 2026</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
                <div>
-                  <p className="font-serif italic text-2xl mb-2 underline decoration-[#FF3E00]">Groups</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Win: 3 pts</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Draw: 1 pt</p>
+                  <p className="font-serif italic text-2xl mb-2 underline decoration-[#FF3E00]">Fase de grupos (Groups)</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Victoria (Win): 3 pts</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Empate (Draw): 1 pt</p>
                </div>
                <div>
-                  <p className="font-serif italic text-2xl mb-2 underline decoration-[#FF3E00]">Knockout</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Round 16: +4 pts</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Quarters: +6 pts</p>
+                  <p className="font-serif italic text-2xl mb-2 underline decoration-[#FF3E00]">Eliminatorias (Knockout)</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Octavos (Round of 16): +4 pts</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Cuartos (Quarterfinals): +6 pts</p>
                </div>
                <div>
-                  <p className="font-serif italic text-2xl mb-2 underline decoration-[#FF3E00]">Finals</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Semis: +8 pts</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Final: +10 pts</p>
+                  <p className="font-serif italic text-2xl mb-2 underline decoration-[#FF3E00]">Fase final (Final rounds)</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Semifinal (Semis): +8 pts</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Final (Final): +10 pts</p>
                </div>
                <div>
-                  <p className="font-serif italic text-2xl mb-2 text-[#FF3E00]">The Wildcard</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">Double pts (KO)</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">-5 pts penalty if out</p>
+                  <p className="font-serif italic text-2xl mb-2 text-[#FF3E00]">El tapado (Wildcard)</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">Duplica puntos (Double pts) en eliminatorias</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">Penalizacion de -5 pts si queda fuera</p>
                </div>
             </div>
          </div>

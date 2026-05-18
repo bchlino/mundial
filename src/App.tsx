@@ -189,7 +189,7 @@ function AppContent() {
       <div className="min-h-screen bg-[#F5F2ED] flex items-center justify-center">
         <div className="flex flex-col items-center gap-6">
           <div className="w-24 h-24 border-8 border-black border-t-[#FF3E00] animate-spin shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]" />
-          <p className="text-black font-black uppercase tracking-[0.4em] animate-pulse">Syncing Matrix...</p>
+          <p className="text-black font-black uppercase tracking-[0.4em] animate-pulse">Sincronizando matriz (Syncing matrix)...</p>
         </div>
       </div>
     );
@@ -209,9 +209,9 @@ function AppContent() {
       <Header activeLeagueId={selectedLeagueId} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-10 border-4 border-black bg-white p-6">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-2">Create private league</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-2">Crear liga privada (Create private league)</p>
           <p className="text-xs font-black uppercase tracking-widest opacity-60 mb-4">
-            Admin leagues: {adminLeaguesCount}
+            Ligas administradas (Admin leagues): {adminLeaguesCount}
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <input
@@ -226,7 +226,7 @@ function AppContent() {
               disabled={isCreatingLeague || !newLeagueName.trim()}
               className="bg-black text-white px-6 py-4 text-sm font-black uppercase tracking-widest hover:bg-[#FF3E00] transition-all disabled:opacity-50"
             >
-              {isCreatingLeague ? 'Creating League...' : 'Create League'}
+              {isCreatingLeague ? 'Creando liga (Creating league)...' : 'Crear liga (Create league)'}
             </button>
           </div>
           {createError && (
@@ -236,7 +236,7 @@ function AppContent() {
 
         {leagues.length > 1 && (
           <div className="mb-10 border-4 border-black bg-white p-6">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-4">Select your league</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-4">Selecciona tu liga (Select your league)</p>
             <div className="flex flex-wrap gap-3">
               {leagues.map((league) => (
                 <button
@@ -265,24 +265,24 @@ function AppContent() {
                exit={{ opacity: 0, y: -20 }}
              >
                <div className="max-w-2xl mx-auto text-center mt-20 p-12 border-8 border-black bg-white shadow-[16px_16px_0px_0px_rgba(0,0,0,1)]">
-                 <h2 className="text-4xl font-serif font-black italic uppercase mb-6 leading-none">No League Assigned</h2>
-                 <p className="text-xs font-black uppercase tracking-widest opacity-60 mb-8">This Google account is not part of any league yet.</p>
+                 <h2 className="text-4xl font-serif font-black italic uppercase mb-6 leading-none">Sin liga asignada (No league assigned)</h2>
+                 <p className="text-xs font-black uppercase tracking-widest opacity-60 mb-8">Esta cuenta de Google aun no pertenece a una liga (This Google account is not part of any league yet).</p>
 
                  {urlLeagueId && !hasProcessedInvite && (
                    <div className="mb-8 p-4 border-2 border-black bg-[#F5F2ED] text-left">
-                     <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-3">Invitation detected</p>
-                     <p className="text-xs font-black uppercase tracking-widest">Joining league from link...</p>
+                     <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-3">Invitacion detectada (Invitation detected)</p>
+                     <p className="text-xs font-black uppercase tracking-widest">Uniendote a la liga desde el enlace (Joining league from link)...</p>
                    </div>
                  )}
 
                  {urlLeagueId && hasProcessedInvite && inviteError && (
                    <div className="mb-8 p-4 border-2 border-[#FF3E00] bg-[#FFF1EC] text-left">
-                     <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00] mb-2">Invite error</p>
+                     <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00] mb-2">Error de invitacion (Invite error)</p>
                      <p className="text-xs font-black uppercase tracking-widest">{inviteError}</p>
                    </div>
                  )}
                  <p className="text-[10px] font-black uppercase tracking-widest opacity-60">
-                   Use the create form above to start a new private league.
+                   Usa el formulario superior para crear una liga privada (Use the create form above to start a new private league).
                  </p>
                </div>
              </motion.div>

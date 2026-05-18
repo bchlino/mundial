@@ -40,7 +40,7 @@ export const Header: React.FC<HeaderProps> = ({ activeLeagueId }) => {
             Mundial <span className="text-[#FF3E00]">Draft</span>
           </h1>
           <p className="text-[10px] tracking-[0.3em] font-black mt-2 uppercase opacity-60 font-sans">
-            Corporate League // Season 2026
+            Liga Privada (Private League) // Temporada (Season) 2026
           </p>
         </div>
 
@@ -50,7 +50,7 @@ export const Header: React.FC<HeaderProps> = ({ activeLeagueId }) => {
               onClick={handleCopyInviteLink}
               className="hidden sm:flex border-2 border-black px-4 py-2 text-[10px] font-black uppercase hover:bg-black hover:text-white transition-all items-center gap-2"
             >
-              Copiar Link De Invitacion
+              Copiar enlace de invitacion (Copy invite link)
             </button>
           )}
           {user ? (
@@ -80,12 +80,12 @@ export const Header: React.FC<HeaderProps> = ({ activeLeagueId }) => {
                       setIsEditing(true);
                     }}
                     className="font-serif italic text-2xl tracking-tight leading-none group cursor-pointer hover:text-[#FF3E00] transition-colors"
-                    title="Click to edit name"
+                    title="Editar nombre (Edit name)"
                   >
-                    {profile?.displayName?.split(' ')[0] || 'Player'} <span className="text-xs uppercase font-sans not-italic font-black border-2 border-black px-2 py-0.5 ml-1">Draft Room</span>
+                    {profile?.displayName?.split(' ')[0] || 'Jugador (Player)'} <span className="text-xs uppercase font-sans not-italic font-black border-2 border-black px-2 py-0.5 ml-1">Sala de draft (Draft room)</span>
                   </div>
                 )}
-                <div className="text-[10px] font-black uppercase opacity-60 mt-1">{profile?.email || 'Anonymous access'}</div>
+                <div className="text-[10px] font-black uppercase opacity-60 mt-1">{profile?.email || 'Acceso con Google (Google access)'}</div>
               </div>
               <div className="flex items-center gap-3">
                 {profile?.photoURL ? (

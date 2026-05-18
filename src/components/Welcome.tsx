@@ -15,9 +15,9 @@ export const Welcome: React.FC = () => {
     } catch (error: any) {
       console.error('Error logging in:', error);
       if (error.code === 'auth/popup-closed-by-user') {
-        setErrorStatus('INICIO DE SESION CANCELADO. VUELVE A INTENTARLO.');
+        setErrorStatus('INICIO DE SESION CANCELADO. VUELVE A INTENTARLO. (LOGIN CANCELED. TRY AGAIN.)');
       } else {
-        setErrorStatus('NO SE PUDO COMPLETAR EL LOGIN CON GOOGLE. INTENTALO DE NUEVO.');
+        setErrorStatus('NO SE PUDO COMPLETAR EL LOGIN CON GOOGLE. INTENTALO DE NUEVO. (GOOGLE LOGIN FAILED. TRY AGAIN.)');
       }
     } finally {
       setIsSubmitting(false);
@@ -33,13 +33,13 @@ export const Welcome: React.FC = () => {
           className="text-left"
         >
           <span className="inline-block px-3 py-1 bg-black text-white text-[10px] font-black uppercase tracking-widest mb-8">
-            Mundial 2026 • Editorial Edition
+            Mundial 2026 • Edicion editorial (Editorial edition)
           </span>
           <h1 className="text-6xl sm:text-8xl font-black tracking-tighter mb-10 leading-[0.85] italic uppercase font-serif">
-            The <span className="text-[#FF3E00]">Next</span> Generation of <span className="underline decoration-[#FF3E00] decoration-8 underline-offset-8">Drafts</span>
+            La <span className="text-[#FF3E00]">nueva</span> generacion de <span className="underline decoration-[#FF3E00] decoration-8 underline-offset-8">porras</span>
           </h1>
           <p className="text-xl text-[#1A1A1A] mb-12 max-w-xl leading-tight font-medium opacity-80">
-            Enter with your Google account and the app will place you in your league automatically.
+            Entra con tu cuenta de Google y la app te ubicara automaticamente en tu liga (Enter with Google and get placed in your league automatically).
           </p>
 
           <div className="max-w-md space-y-4">
@@ -55,12 +55,12 @@ export const Welcome: React.FC = () => {
               disabled={isSubmitting}
               className="w-full bg-black text-white py-6 text-2xl font-black uppercase tracking-tighter hover:bg-[#FF3E00] transition-all disabled:opacity-50 flex items-center justify-center gap-4 group"
             >
-              {isSubmitting ? 'CONNECTING...' : 'ENTER WITH GOOGLE'}
+              {isSubmitting ? 'CONECTANDO (CONNECTING)...' : 'ENTRAR CON GOOGLE (ENTER WITH GOOGLE)'}
               <LogIn className="w-8 h-8" />
               <ArrowRight className="w-8 h-8 group-hover:translate-x-2 transition-transform" />
             </button>
             <p className="text-[10px] font-black uppercase tracking-widest opacity-40 text-center">
-              One account, multiple leagues // Secure identity per user
+              Una cuenta, varias ligas // Identidad segura por usuario (One account, multiple leagues)
             </p>
           </div>
         </motion.div>
@@ -77,18 +77,18 @@ export const Welcome: React.FC = () => {
               {[
                 {
                   icon: Users,
-                  title: "Snake Draft",
-                  desc: "Fair turn-based order. Your strategy starts at the selection."
+                  title: "Draft serpiente (Snake draft)",
+                  desc: "Turnos justos por orden. Tu estrategia empieza en la seleccion."
                 },
                 {
                   icon: ShieldCheck,
-                  title: "Exclusive Ownership",
-                  desc: "If you pick Brazil, nobody else can. 100% real rivalry."
+                  title: "Propiedad exclusiva (Exclusive ownership)",
+                  desc: "Si eliges Brasil, nadie mas puede tomarlo. Rivalidad real al 100%."
                 },
                 {
                   icon: Trophy,
-                  title: "The Wildcard",
-                  desc: "Pick a dark horse. If they go deep, you double your points."
+                  title: "El tapado (Wildcard)",
+                  desc: "Elige un tapado. Si llega lejos, duplicas tus puntos."
                 }
               ].map((feature, i) => (
                 <div key={i} className="flex gap-8 group">
