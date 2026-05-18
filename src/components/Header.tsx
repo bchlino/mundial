@@ -3,7 +3,11 @@ import { useAuth } from '../lib/AuthContext';
 import { signInWithGoogle, logout } from '../lib/firebase';
 import { Trophy, LogOut, LogIn, User as UserIcon, Check } from 'lucide-react';
 
-export const Header: React.FC = () => {
+interface HeaderProps {
+  activeLeagueId?: string | null;
+}
+
+export const Header: React.FC<HeaderProps> = ({ activeLeagueId }) => {
   const { user, profile, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState('');
@@ -13,6 +17,19 @@ export const Header: React.FC = () => {
       await updateProfile(newName.toUpperCase());
       setIsEditing(false);
     }
+  };
+
+  const handleCopyInviteLink = async () => {
+    const inviteUrl = new URL(window.location.href);
+
+    if (activeLeagueId) {
+      inviteUrl.searchParams.set('league', activeLeagueId);
+    } else {
+      inviteUrl.searchParams.delete('league');
+    }
+
+    await navigator.clipboard.writeText(inviteUrl.toString());
+    alert('Link de invitacion copiado. Compartelo con tu grupo.');
   };
 
   return (
@@ -30,13 +47,10 @@ export const Header: React.FC = () => {
         <div className="flex items-center gap-6 self-end sm:self-auto">
           {user && (
             <button
-              onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
-                alert("¡Link de la liga copiado! Pásalo por el Slack/Teams.");
-              }}
+              onClick={handleCopyInviteLink}
               className="hidden sm:flex border-2 border-black px-4 py-2 text-[10px] font-black uppercase hover:bg-black hover:text-white transition-all items-center gap-2"
             >
-              Share Matrix Link
+              Copiar Link De Invitacion
             </button>
           )}
           {user ? (

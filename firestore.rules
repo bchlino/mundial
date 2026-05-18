@@ -22,7 +22,7 @@ service cloud.firestore {
     }
     match /users/{userId} {
       allow get: if isSignedIn();
-      allow list: if isSignedIn();
+      allow list: if false;
       allow create: if isSignedIn() && request.auth.uid == userId && isValidUser(incoming());
       allow update: if isSignedIn() && request.auth.uid == userId && 
                     incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'email', 'updatedAt']);
@@ -43,14 +43,29 @@ service cloud.firestore {
     function isLeagueAdmin(leagueId) {
       return get(/databases/$(database)/documents/leagues/$(leagueId)).data.adminId == request.auth.uid;
     }
+    function isLeagueMemberData(data) {
+      return data.participants is list && data.participants.hasAny([request.auth.uid]);
+    }
+    function isLeagueMember(leagueId) {
+      return isSignedIn() && isLeagueMemberData(get(/databases/$(database)/documents/leagues/$(leagueId)).data);
+    }
+    function isSelfJoinParticipantsUpdate() {
+      return incoming().diff(existing()).affectedKeys().hasOnly(['participants']) &&
+             incoming().participants is list &&
+             incoming().participants.hasAll(existing().participants) &&
+             incoming().participants.hasAny([request.auth.uid]) &&
+             (
+               (existing().participants.hasAny([request.auth.uid]) && incoming().participants.size() == existing().participants.size()) ||
+               (!existing().participants.hasAny([request.auth.uid]) && incoming().participants.size() == existing().participants.size() + 1)
+             );
+    }
 
     match /leagues/{leagueId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
+      allow get, list: if isSignedIn() && isLeagueMemberData(resource.data);
       allow create: if isSignedIn() && isValidLeague(incoming()) && incoming().adminId == request.auth.uid;
       allow update: if isSignedIn() && (
         (isLeagueAdmin(leagueId) && incoming().diff(existing()).affectedKeys().hasAny(['status', 'draftOrder', 'currentTurnIndex', 'participants'])) ||
-        (incoming().diff(existing()).affectedKeys().hasOnly(['participants'])) ||
+        isSelfJoinParticipantsUpdate() ||
         (incoming().diff(existing()).affectedKeys().hasOnly(['currentTurnIndex']))
       );
     }
@@ -63,11 +78,11 @@ service cloud.firestore {
     }
 
     match /leagues/{leagueId}/picks/{userId} {
-      allow read: if isSignedIn();
+      allow read: if isLeagueMember(leagueId);
       allow create, update: if isSignedIn() && 
                              request.auth.uid == userId && 
                              isValidPick(incoming()) &&
-                             exists(/databases/$(database)/documents/leagues/$(leagueId));
+                             isLeagueMember(leagueId);
     }
   }
 }

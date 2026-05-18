@@ -10,7 +10,7 @@ import { Welcome } from './components/Welcome';
 import { TeamPicker } from './components/TeamPicker';
 import { Dashboard } from './components/Dashboard';
 import { db } from './lib/firebase';
-import { collection, doc, onSnapshot, query, where } from 'firebase/firestore';
+import { arrayUnion, collection, doc, onSnapshot, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface LeagueData {
@@ -23,11 +23,18 @@ interface LeagueData {
 
 function AppContent() {
   const { user, profile, loading } = useAuth();
+  const urlLeagueId = new URLSearchParams(window.location.search).get('league');
   const [leagues, setLeagues] = useState<LeagueData[]>([]);
   const [selectedLeagueId, setSelectedLeagueId] = useState<string | null>(null);
   const [userPicks, setUserPicks] = useState<any>(null);
   const [leaguesLoading, setLeaguesLoading] = useState(true);
   const [picksLoading, setPicksLoading] = useState(true);
+  const [newLeagueName, setNewLeagueName] = useState('');
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [isCreatingLeague, setIsCreatingLeague] = useState(false);
+  const [isJoiningInviteLeague, setIsJoiningInviteLeague] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [hasProcessedInvite, setHasProcessedInvite] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -54,7 +61,6 @@ function AppContent() {
           return previousLeagueId;
         }
 
-        const urlLeagueId = new URLSearchParams(window.location.search).get('league');
         if (urlLeagueId && availableLeagues.some((league) => league.id === urlLeagueId)) {
           return urlLeagueId;
         }
@@ -93,6 +99,41 @@ function AppContent() {
   }, [selectedLeagueId]);
 
   useEffect(() => {
+    if (!user || !urlLeagueId || leaguesLoading || hasProcessedInvite) return;
+
+    const userIsAlreadyInInviteLeague = leagues.some((league) => league.id === urlLeagueId);
+    if (userIsAlreadyInInviteLeague) {
+      setSelectedLeagueId(urlLeagueId);
+      setHasProcessedInvite(true);
+      return;
+    }
+
+    const joinInviteLeague = async () => {
+      setIsJoiningInviteLeague(true);
+      setInviteError(null);
+      try {
+        await updateDoc(doc(db, 'leagues', urlLeagueId), {
+          participants: arrayUnion(user.uid),
+        });
+        setSelectedLeagueId(urlLeagueId);
+      } catch (error) {
+        console.error('Error joining invited league:', error);
+        setInviteError('No se pudo unir a la liga del enlace. Verifica que la invitacion sea valida.');
+      } finally {
+        setIsJoiningInviteLeague(false);
+        setHasProcessedInvite(true);
+      }
+    };
+
+    joinInviteLeague();
+  }, [user, urlLeagueId, leaguesLoading, leagues, hasProcessedInvite]);
+
+  useEffect(() => {
+    if (!user) {
+      setHasProcessedInvite(false);
+      return;
+    }
+
     if (!user || !selectedLeagueId) {
       setUserPicks(null);
       setPicksLoading(false);
@@ -114,6 +155,32 @@ function AppContent() {
     };
   }, [user, selectedLeagueId]);
 
+  const handleCreateLeague = async () => {
+    const trimmedLeagueName = newLeagueName.trim();
+    if (!user || !trimmedLeagueName) return;
+
+    setIsCreatingLeague(true);
+    setCreateError(null);
+    try {
+      const leagueRef = doc(collection(db, 'leagues'));
+      await setDoc(leagueRef, {
+        name: trimmedLeagueName,
+        adminId: user.uid,
+        status: 'active',
+        participants: [user.uid],
+        createdAt: serverTimestamp(),
+      });
+
+      setNewLeagueName('');
+      setSelectedLeagueId(leagueRef.id);
+    } catch (error) {
+      console.error('Error creating league:', error);
+      setCreateError('No se pudo crear la liga. Intentalo nuevamente.');
+    } finally {
+      setIsCreatingLeague(false);
+    }
+  };
+
   const currentLeague = leagues.find((league: LeagueData) => league.id === selectedLeagueId) || null;
 
   if (loading || leaguesLoading || picksLoading) {
@@ -130,7 +197,7 @@ function AppContent() {
   if (!user) {
     return (
       <div className="min-h-screen bg-[#F5F2ED] text-[#1A1A1A]">
-        <Header />
+        <Header activeLeagueId={null} />
         <Welcome />
       </div>
     );
@@ -138,7 +205,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-[#F5F2ED] text-[#1A1A1A] selection:bg-[#FF3E00]/20">
-      <Header />
+      <Header activeLeagueId={selectedLeagueId} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {leagues.length > 1 && (
           <div className="mb-10 border-4 border-black bg-white p-6">
@@ -172,23 +239,50 @@ function AppContent() {
              >
                <div className="max-w-2xl mx-auto text-center mt-20 p-12 border-8 border-black bg-white shadow-[16px_16px_0px_0px_rgba(0,0,0,1)]">
                  <h2 className="text-4xl font-serif font-black italic uppercase mb-6 leading-none">No League Assigned</h2>
-                 <p className="text-xs font-black uppercase tracking-widest opacity-60 mb-12">This Google account is not part of any league yet.</p>
-                 <button 
-                   onClick={async () => {
-                     const { setDoc, doc, serverTimestamp } = await import('firebase/firestore');
-                     const generatedLeagueId = `league-${Date.now().toString(36)}`;
-                     await setDoc(doc(db, 'leagues', generatedLeagueId), {
-                       name: `Porra de ${profile?.displayName || 'Mi Grupo'}`,
-                       adminId: user.uid,
-                       status: 'active',
-                       participants: [user.uid],
-                       createdAt: serverTimestamp()
-                     });
-                   }}
-                   className="w-full bg-black text-white py-6 text-xl font-black uppercase tracking-widest hover:bg-[#FF3E00] transition-all shadow-[8px_8px_0px_0px_rgba(255,62,0,0.3)]"
-                 >
-                   Create My League
-                 </button>
+                 <p className="text-xs font-black uppercase tracking-widest opacity-60 mb-8">This Google account is not part of any league yet.</p>
+
+                 {urlLeagueId && !hasProcessedInvite && (
+                   <div className="mb-8 p-4 border-2 border-black bg-[#F5F2ED] text-left">
+                     <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-3">Invitation detected</p>
+                     <p className="text-xs font-black uppercase tracking-widest">Joining league from link...</p>
+                   </div>
+                 )}
+
+                 {urlLeagueId && hasProcessedInvite && inviteError && (
+                   <div className="mb-8 p-4 border-2 border-[#FF3E00] bg-[#FFF1EC] text-left">
+                     <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00] mb-2">Invite error</p>
+                     <p className="text-xs font-black uppercase tracking-widest">{inviteError}</p>
+                   </div>
+                 )}
+
+                 <div className="space-y-4 text-left">
+                   <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Create private league</p>
+                   <input
+                     type="text"
+                     value={newLeagueName}
+                     onChange={(event) => setNewLeagueName(event.target.value)}
+                     placeholder={`Liga Mundial ${profile?.displayName || 'Mi Grupo'}`}
+                     className="w-full border-4 border-black p-4 text-sm font-black uppercase tracking-wider focus:outline-none"
+                   />
+
+                   {createError && (
+                     <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{createError}</p>
+                   )}
+
+                   <button
+                     onClick={handleCreateLeague}
+                     disabled={isCreatingLeague || !newLeagueName.trim()}
+                     className="w-full bg-black text-white py-5 text-sm font-black uppercase tracking-widest hover:bg-[#FF3E00] transition-all disabled:opacity-50"
+                   >
+                     {isCreatingLeague ? 'Creating League...' : 'Create Private League'}
+                   </button>
+
+                   {urlLeagueId && !isJoiningInviteLeague && !inviteError && (
+                     <p className="text-[10px] font-black uppercase tracking-widest opacity-60">
+                       If this invite is valid, you will be added only to that league.
+                     </p>
+                   )}
+                 </div>
                </div>
              </motion.div>
           ) : !userPicks || (userPicks.teamIds || []).length < 4 ? (
