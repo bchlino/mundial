@@ -14,11 +14,10 @@ const envConfig = {
   firestoreDatabaseId: import.meta.env.VITE_FIREBASE_DATABASE_ID,
 };
 
-const useEnvConfig = Boolean(
-  envConfig.apiKey && envConfig.authDomain && envConfig.projectId && envConfig.appId
-);
-
-const runtimeConfig = useEnvConfig ? envConfig : firebaseConfig;
+const runtimeConfig = {
+  ...firebaseConfig,
+  ...Object.fromEntries(Object.entries(envConfig).filter(([, value]) => Boolean(value))),
+};
 
 const app = initializeApp(runtimeConfig);
 export const db = runtimeConfig.firestoreDatabaseId
