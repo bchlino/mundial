@@ -12,7 +12,7 @@ import { Dashboard } from './components/Dashboard';
 import { db } from './lib/firebase';
 import { arrayUnion, collection, doc, onSnapshot, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
-import ResultsAdmin from './components/ResultsAdmin';
+import ResultsAdmin from './components/ResultsAdmin.tsx';
 
 interface LeagueData {
   id: string;
@@ -254,6 +254,12 @@ function AppContent() {
                 </button>
               ))}
             </div>
+          </div>
+        )}
+
+        {currentLeague && user?.uid === currentLeague.adminId && (
+          <div className="mb-10">
+            <ResultsAdmin adminUid={user.uid} />
           </div>
         )}
 

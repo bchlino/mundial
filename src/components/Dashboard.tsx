@@ -22,11 +22,30 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
   const [users, setUsers] = useState<Record<string, any>>({});
    const [view, setView] = useState<'grid' | 'table'>('grid');
    const [results, setResults] = useState<MatchResult[]>([]);
+   const normalizeStage = (stage: any): MatchResult['stage'] => {
+      if (stage === 'round_of_16') return 'round16';
+      if (stage === 'quarterfinals') return 'quarters';
+      if (stage === 'semifinals') return 'semis';
+      if (stage === 'groups' || stage === 'round16' || stage === 'quarters' || stage === 'semis' || stage === 'final') return stage;
+      return 'groups';
+   };
+
    // Leer resultados de partidos
    useEffect(() => {
       const unsub = onSnapshot(collection(db, 'matches'), (snap) => {
          const arr: MatchResult[] = [];
-         snap.forEach(doc => arr.push({ id: doc.id, ...(doc.data() as Omit<MatchResult, 'id'>) }));
+         snap.forEach(doc => {
+            const data = doc.data() as any;
+            arr.push({
+              id: doc.id,
+              homeTeam: data.homeTeam,
+              awayTeam: data.awayTeam,
+              homeGoals: typeof data.homeGoals === 'number' ? data.homeGoals : Number(data.homeScore || 0),
+              awayGoals: typeof data.awayGoals === 'number' ? data.awayGoals : Number(data.awayScore || 0),
+              stage: normalizeStage(data.stage),
+              finished: typeof data.finished === 'boolean' ? data.finished : true,
+            });
+         });
          setResults(arr);
       });
       return () => unsub();
@@ -122,7 +141,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
              <motion.div 
                key={team.id}
                className={cn(
-                 "relative p-8 border-4 transition-all flex flex-col group min-h-[320px]",
+                 "relative p-8 border-4 transition-all flex flex-col group min-h-80",
                  myPicks?.tapadoId === team.id 
                   ? "bg-black text-white border-black shadow-[12px_12px_0px_0px_rgba(255,62,0,1)]" 
                   : "bg-white border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
@@ -172,7 +191,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
            ))}
 
            {Array.from({ length: 4 - myTeams.length }).map((_, i) => (
-             <div key={i} className="p-8 border-4 border-dashed border-black/20 bg-black/5 flex flex-col items-center justify-center text-center gap-4 min-h-[320px]">
+             <div key={i} className="p-8 border-4 border-dashed border-black/20 bg-black/5 flex flex-col items-center justify-center text-center gap-4 min-h-80">
                 <div className="w-12 h-12 border-2 border-black/20 flex items-center justify-center">
                    <Users className="w-6 h-6 opacity-20" />
                 </div>
@@ -319,7 +338,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
       </section>
 
       {/* Rules Notice */}
-      <div className="bg-black text-white p-12 border-l-[16px] border-[#FF3E00] flex flex-col md:flex-row items-center gap-12 relative overflow-hidden">
+      <div className="bg-black text-white p-12 border-l-16 border-[#FF3E00] flex flex-col md:flex-row items-center gap-12 relative overflow-hidden">
          <div className="absolute top-0 right-0 opacity-5 text-9xl font-serif font-black italic select-none">RULES</div>
          <div className="flex-1 relative z-10">
             <h3 className="text-xs font-black uppercase tracking-[0.5em] mb-6 opacity-60">Matriz de puntuacion (Scoring matrix) // Edicion 2026</h3>

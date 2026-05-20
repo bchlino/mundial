@@ -105,6 +105,76 @@ export const Welcome: React.FC = () => {
           </div>
         </motion.div>
       </div>
+
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+        className="mt-16 border-4 border-black bg-white p-6 md:p-10"
+      >
+        <h2 className="text-4xl md:text-5xl font-serif italic font-black uppercase leading-none mb-6">
+          Como funciona (How it works)
+        </h2>
+        <p className="text-xs font-black uppercase tracking-widest opacity-60 mb-8">
+          Guia rapida para dummies (Quick guide for dummies)
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+          <article className="border-2 border-black p-5 bg-[#F5F2ED]">
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">Paso 1</p>
+            <h3 className="text-2xl font-serif italic font-black uppercase mb-2">Login con Google</h3>
+            <p className="text-xs font-black uppercase tracking-wider opacity-70">
+              Debes entrar con tu cuenta de Google. Asi cada jugador tiene identidad unica y segura.
+            </p>
+          </article>
+
+          <article className="border-2 border-black p-5 bg-[#F5F2ED]">
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">Paso 2</p>
+            <h3 className="text-2xl font-serif italic font-black uppercase mb-2">Liga privada</h3>
+            <p className="text-xs font-black uppercase tracking-wider opacity-70">
+              Creas o te unes por enlace de invitacion. Solo participantes de tu liga ven la clasificacion.
+            </p>
+          </article>
+
+          <article className="border-2 border-black p-5 bg-[#F5F2ED]">
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">Paso 3</p>
+            <h3 className="text-2xl font-serif italic font-black uppercase mb-2">Elige 4 equipos</h3>
+            <p className="text-xs font-black uppercase tracking-wider opacity-70">
+              Tomas 1 equipo por bombo: A, B, C y D. Los bombos separan niveles y siguen orden de ranking FIFA.
+            </p>
+          </article>
+
+          <article className="border-2 border-black p-5 bg-[#F5F2ED]">
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">Paso 4</p>
+            <h3 className="text-2xl font-serif italic font-black uppercase mb-2">Tapado opcional</h3>
+            <p className="text-xs font-black uppercase tracking-wider opacity-70">
+              Puedes marcar 1 de tus 4 equipos como tapado. Si gana en eliminatorias, suma doble; si queda fuera, penaliza -5.
+            </p>
+          </article>
+        </div>
+
+        <div className="mt-8 border-2 border-black p-5">
+          <h3 className="text-2xl font-serif italic font-black uppercase mb-4">Puntuacion (Scoring)</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 border border-black">
+              <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">Grupos</p>
+              <p className="text-xs font-black uppercase tracking-wider">Victoria: +3</p>
+              <p className="text-xs font-black uppercase tracking-wider">Empate: +1</p>
+              <p className="text-xs font-black uppercase tracking-wider">Derrota: +0</p>
+            </div>
+            <div className="p-4 border border-black">
+              <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">Eliminatorias</p>
+              <p className="text-xs font-black uppercase tracking-wider">Octavos: +4</p>
+              <p className="text-xs font-black uppercase tracking-wider">Cuartos: +6</p>
+            </div>
+            <div className="p-4 border border-black">
+              <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">Finales</p>
+              <p className="text-xs font-black uppercase tracking-wider">Semifinal: +8</p>
+              <p className="text-xs font-black uppercase tracking-wider">Final: +10</p>
+            </div>
+          </div>
+        </div>
+      </motion.section>
     </div>
   );
 };
