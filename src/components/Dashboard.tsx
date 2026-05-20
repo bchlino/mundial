@@ -3,6 +3,7 @@ import { useAuth } from '../lib/AuthContext';
 import { db, OperationType, handleFirestoreError } from '../lib/firebase';
 import { doc, onSnapshot, collection, getDoc, updateDoc } from 'firebase/firestore';
 import { WORLD_CUP_TEAMS, Team } from '../lib/teams';
+import { MatchResult, getMatchPoints } from '../lib/results';
 import { motion } from 'motion/react';
 import { Trophy, Star, Users, LayoutGrid, Info, ShieldCheck } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -19,7 +20,17 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
   const { user } = useAuth();
   const [picks, setPicks] = useState<Record<string, any>>({});
   const [users, setUsers] = useState<Record<string, any>>({});
-  const [view, setView] = useState<'grid' | 'table'>('grid');
+   const [view, setView] = useState<'grid' | 'table'>('grid');
+   const [results, setResults] = useState<MatchResult[]>([]);
+   // Leer resultados de partidos
+   useEffect(() => {
+      const unsub = onSnapshot(collection(db, 'matches'), (snap) => {
+         const arr: MatchResult[] = [];
+         snap.forEach(doc => arr.push({ id: doc.id, ...(doc.data() as Omit<MatchResult, 'id'>) }));
+         setResults(arr);
+      });
+      return () => unsub();
+   }, []);
 
   useEffect(() => {
     const unsubPicks = onSnapshot(collection(db, 'leagues', league.id, 'picks'), (snap) => {
@@ -48,8 +59,35 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
     };
   }, [league.id, league.participants]);
 
-  const myPicks = picks[user?.uid || ''];
-  const myTeams = WORLD_CUP_TEAMS.filter(t => myPicks?.teamIds?.includes(t.id));
+   const myPicks = picks[user?.uid || ''];
+   const myTeams = WORLD_CUP_TEAMS.filter(t => myPicks?.teamIds?.includes(t.id));
+
+   // Calcula puntos para un equipo
+   function calcTeamPoints(teamId: string, tapadoId?: string) {
+      let pts = results.reduce((acc, match) => acc + getMatchPoints(teamId, match), 0);
+      // Tapado: duplica puntos en KO, penaliza si eliminado
+      if (tapadoId && teamId === tapadoId) {
+         let tapadoPts = 0;
+         let eliminado = false;
+         for (const match of results) {
+            if (match.stage !== 'groups' && (match.homeTeam === teamId || match.awayTeam === teamId)) {
+               const win = getMatchPoints(teamId, match) > 0;
+               if (win) tapadoPts += getMatchPoints(teamId, match); // suma normal
+               else eliminado = true;
+            }
+         }
+         pts += tapadoPts; // duplica KO
+         if (eliminado) pts -= 5;
+      }
+      return pts;
+   }
+
+   // Calcula puntos totales de usuario
+   function calcUserPoints(userId: string) {
+      const userPicks = picks[userId];
+      if (!userPicks?.teamIds) return 0;
+      return userPicks.teamIds.reduce((acc: number, tid: string) => acc + calcTeamPoints(tid, userPicks.tapadoId), 0);
+   }
 
   const handleSetTapado = async (teamId: string) => {
     if (!user) return;
@@ -101,7 +139,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                <div className="mt-auto pt-6 border-t-2 border-black/10">
                  <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest mb-4">
                     <span className="opacity-40">Puntos acumulados (Accrued points)</span>
-                    <span className={cn(myPicks?.tapadoId === team.id ? "text-[#FF3E00]" : "text-black")}>00.00</span>
+                    <span className={cn(myPicks?.tapadoId === team.id ? "text-[#FF3E00]" : "text-black")}>{calcTeamPoints(team.id, myPicks?.tapadoId)}</span>
                  </div>
                  
                  {myPicks?.tapadoId === team.id ? (
@@ -192,7 +230,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                           <h4 className="font-serif italic text-2xl leading-none">
                              {users[uid]?.displayName}
                           </h4>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">00.00 PUNTOS (POINTS)</p>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{calcUserPoints(uid)} PUNTOS (POINTS)</p>
                        </div>
                     </div>
 
@@ -269,7 +307,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                               </div>
                            </td>
                            <td className="px-8 py-6 text-right">
-                              <span className="font-serif italic font-black text-[#FF3E00] text-3xl">00.00</span>
+                              <span className="font-serif italic font-black text-[#FF3E00] text-3xl">{calcUserPoints(uid)}</span>
                            </td>
                         </tr>
                       );

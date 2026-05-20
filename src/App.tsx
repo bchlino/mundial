@@ -12,6 +12,7 @@ import { Dashboard } from './components/Dashboard';
 import { db } from './lib/firebase';
 import { arrayUnion, collection, doc, onSnapshot, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
+import ResultsAdmin from './components/ResultsAdmin';
 
 interface LeagueData {
   id: string;
