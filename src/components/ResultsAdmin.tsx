@@ -3,6 +3,7 @@ import { addDoc, collection, deleteDoc, doc, onSnapshot, serverTimestamp, update
 import { db } from '../lib/firebase';
 import { MatchResult } from '../lib/results';
 import { WORLD_CUP_TEAMS } from '../lib/teams';
+import { useAuth } from '../lib/AuthContext';
 
 type Stage = MatchResult['stage'];
 
@@ -55,14 +56,21 @@ const normalizeStage = (value: string): Stage => {
 };
 
 const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState<MatchFormState>(INITIAL_FORM);
   const [matches, setMatches] = useState<MatchResult[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [readError, setReadError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!user?.uid) {
+      setMatches([]);
+      return;
+    }
+
     const unsub = onSnapshot(collection(db, 'matches'), (snapshot) => {
       const loaded: MatchResult[] = snapshot.docs.map((matchDoc) => {
         const data = matchDoc.data() as any;
@@ -77,10 +85,19 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
         };
       });
       setMatches(loaded);
+      setReadError(null);
+    }, (error) => {
+      console.error('Admin matches snapshot permission error:', {
+        code: (error as any)?.code,
+        message: (error as any)?.message,
+        uid: user?.uid,
+        adminUid,
+      });
+      setReadError('No se pudo leer /matches por permisos. Verifica login, projectId y databaseId en Vercel.');
     });
 
     return () => unsub();
-  }, []);
+  }, [user?.uid, adminUid]);
 
   const teamsByPot = useMemo(() => {
     return ['A', 'B', 'C', 'D'].map((pot) => ({
@@ -189,6 +206,9 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
         <h2 className="text-2xl md:text-3xl font-serif italic font-black uppercase">Resultados oficiales (Official results)</h2>
         <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Solo admin (Admin only)</span>
       </div>
+      <p className="mb-4 text-[10px] font-black uppercase tracking-widest opacity-60">
+        Sesion: {user?.uid || 'sin login'} // Admin esperado: {adminUid}
+      </p>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 border-2 border-black p-4 bg-[#F5F2ED]">
         <div>
@@ -306,6 +326,7 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
 
         {statusMessage && <p className="md:col-span-2 text-[10px] font-black uppercase tracking-widest text-green-700">{statusMessage}</p>}
         {errorMessage && <p className="md:col-span-2 text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{errorMessage}</p>}
+        {readError && <p className="md:col-span-2 text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{readError}</p>}
       </form>
 
       <div className="mt-6 border-2 border-black overflow-x-auto">

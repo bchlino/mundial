@@ -30,8 +30,13 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
       return 'groups';
    };
 
-   // Leer resultados de partidos
+   // Leer resultados de partidos solo con usuario autenticado
    useEffect(() => {
+      if (!user?.uid) {
+         setResults([]);
+         return;
+      }
+
       const unsub = onSnapshot(collection(db, 'matches'), (snap) => {
          const arr: MatchResult[] = [];
          snap.forEach(doc => {
@@ -47,9 +52,15 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
             });
          });
          setResults(arr);
+      }, (error) => {
+         console.error('Matches snapshot permission error:', {
+            code: (error as any)?.code,
+            message: (error as any)?.message,
+            uid: user?.uid,
+         });
       });
       return () => unsub();
-   }, []);
+   }, [user?.uid]);
 
   useEffect(() => {
     const unsubPicks = onSnapshot(collection(db, 'leagues', league.id, 'picks'), (snap) => {
