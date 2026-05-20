@@ -8,7 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "firebase:login": "npx -y firebase-tools login",
+    "firebase:rules:deploy": "npx -y firebase-tools deploy --only firestore --project gen-lang-client-0384172144"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
