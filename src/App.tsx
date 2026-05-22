@@ -38,6 +38,10 @@ function AppContent() {
   const [hasProcessedInvite, setHasProcessedInvite] = useState(false);
 
   useEffect(() => {
+    if (loading) {
+      return;
+    }
+
     if (!user) {
       setLeagues([]);
       setSelectedLeagueId(null);
@@ -79,7 +83,7 @@ function AppContent() {
     return () => {
       unsubLeagues();
     };
-  }, [user]);
+  }, [user, loading]);
 
   useEffect(() => {
     const currentUrl = new URL(window.location.href);
@@ -100,6 +104,7 @@ function AppContent() {
   }, [selectedLeagueId]);
 
   useEffect(() => {
+    if (loading) return;
     if (!user || !urlLeagueId || leaguesLoading || hasProcessedInvite) return;
 
     const userIsAlreadyInInviteLeague = leagues.some((league) => league.id === urlLeagueId);
@@ -127,9 +132,11 @@ function AppContent() {
     };
 
     joinInviteLeague();
-  }, [user, urlLeagueId, leaguesLoading, leagues, hasProcessedInvite]);
+  }, [user, urlLeagueId, leaguesLoading, leagues, hasProcessedInvite, loading]);
 
   useEffect(() => {
+    if (loading) return;
+
     if (!user) {
       setHasProcessedInvite(false);
       return;
@@ -154,7 +161,7 @@ function AppContent() {
     return () => {
       unsubPicks();
     };
-  }, [user, selectedLeagueId]);
+  }, [user, selectedLeagueId, loading]);
 
   const handleCreateLeague = async () => {
     const trimmedLeagueName = newLeagueName.trim();

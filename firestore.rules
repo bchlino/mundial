@@ -44,10 +44,14 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/leagues/$(leagueId)).data.adminId == request.auth.uid;
     }
     function isLeagueMemberData(data) {
-      return data.participants is list && data.participants.hasAny([request.auth.uid]);
+      return data.participants != null &&
+             data.participants is list &&
+             data.participants.hasAny([request.auth.uid]);
     }
     function isLeagueMember(leagueId) {
-      return isSignedIn() && isLeagueMemberData(get(/databases/$(database)/documents/leagues/$(leagueId)).data);
+      return isSignedIn() &&
+             exists(/databases/$(database)/documents/leagues/$(leagueId)) &&
+             isLeagueMemberData(get(/databases/$(database)/documents/leagues/$(leagueId)).data);
     }
     function isSelfJoinParticipantsUpdate() {
       return incoming().diff(existing()).affectedKeys().hasOnly(['participants']) &&
