@@ -10,6 +10,8 @@ service cloud.firestore {
     function isSignedIn() { return request.auth != null; }
     function isVerified() { return isSignedIn(); } // Simplified for now as some emails might not be verified but Google login usually is. Actually instructions say strictly mandate email_verified == true.
     function isEmailVerified() { return isSignedIn() && request.auth.token.email_verified == true; }
+    // DEBUG MODE: keep false in production.
+    function debugMode() { return false; }
     function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
     function incoming() { return request.resource.data; }
     function existing() { return resource.data; }
@@ -65,9 +67,10 @@ service cloud.firestore {
     }
 
     match /leagues/{leagueId} {
-      allow get, list: if isSignedIn() && isLeagueMemberData(resource.data);
+      allow get, list: if isSignedIn() && (debugMode() || isLeagueMemberData(resource.data));
       allow create: if isSignedIn() && isValidLeague(incoming()) && incoming().adminId == request.auth.uid;
       allow update: if isSignedIn() && (
+        (debugMode()) ||
         (isLeagueAdmin(leagueId) && incoming().diff(existing()).affectedKeys().hasAny(['status', 'draftOrder', 'currentTurnIndex', 'participants'])) ||
         isSelfJoinParticipantsUpdate() ||
         (incoming().diff(existing()).affectedKeys().hasOnly(['currentTurnIndex']))
@@ -82,18 +85,19 @@ service cloud.firestore {
     }
 
     match /leagues/{leagueId}/picks/{userId} {
-      allow read: if isLeagueMember(leagueId);
+      allow read: if isSignedIn() && (debugMode() || isLeagueMember(leagueId));
       allow create, update: if isSignedIn() && 
+                             (debugMode() ||
                              request.auth.uid == userId && 
                              isValidPick(incoming()) &&
-                             isLeagueMember(leagueId);
+                             isLeagueMember(leagueId));
     }
 
     // Match Results (Global)
     match /matches/{matchId} {
       allow read: if isSignedIn();
-      allow create: if isSignedIn() && incoming().adminId == request.auth.uid;
-      allow update, delete: if isSignedIn() && existing().adminId == request.auth.uid;
+      allow create: if isSignedIn() && (debugMode() || incoming().adminId == request.auth.uid);
+      allow update, delete: if isSignedIn() && (debugMode() || existing().adminId == request.auth.uid);
     }
   }
 }

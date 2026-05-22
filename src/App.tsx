@@ -36,6 +36,7 @@ function AppContent() {
   const [isJoiningInviteLeague, setIsJoiningInviteLeague] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [hasProcessedInvite, setHasProcessedInvite] = useState(false);
+  const [rulesDiag, setRulesDiag] = useState<string | null>(null);
 
   useEffect(() => {
     if (loading) {
@@ -54,31 +55,44 @@ function AppContent() {
     setLeaguesLoading(true);
     const leaguesQuery = query(collection(db, 'leagues'), where('participants', 'array-contains', user.uid));
 
-    const unsubLeagues = onSnapshot(leaguesQuery, (snapshot) => {
-      const availableLeagues: LeagueData[] = snapshot.docs.map((leagueDoc) => ({
-        id: leagueDoc.id,
-        ...(leagueDoc.data() as Omit<LeagueData, 'id'>),
-      }));
+    const unsubLeagues = onSnapshot(
+      leaguesQuery,
+      (snapshot) => {
+        const availableLeagues: LeagueData[] = snapshot.docs.map((leagueDoc) => ({
+          id: leagueDoc.id,
+          ...(leagueDoc.data() as Omit<LeagueData, 'id'>),
+        }));
 
-      setLeagues(availableLeagues);
-      setSelectedLeagueId((previousLeagueId: string | null) => {
-        if (previousLeagueId && availableLeagues.some((league) => league.id === previousLeagueId)) {
-          return previousLeagueId;
-        }
+        setLeagues(availableLeagues);
+        setSelectedLeagueId((previousLeagueId: string | null) => {
+          if (previousLeagueId && availableLeagues.some((league) => league.id === previousLeagueId)) {
+            return previousLeagueId;
+          }
 
-        if (urlLeagueId && availableLeagues.some((league) => league.id === urlLeagueId)) {
-          return urlLeagueId;
-        }
+          if (urlLeagueId && availableLeagues.some((league) => league.id === urlLeagueId)) {
+            return urlLeagueId;
+          }
 
-        const storedLeagueId = window.localStorage.getItem('selectedLeagueId');
-        if (storedLeagueId && availableLeagues.some((league) => league.id === storedLeagueId)) {
-          return storedLeagueId;
-        }
+          const storedLeagueId = window.localStorage.getItem('selectedLeagueId');
+          if (storedLeagueId && availableLeagues.some((league) => league.id === storedLeagueId)) {
+            return storedLeagueId;
+          }
 
-        return availableLeagues[0]?.id ?? null;
-      });
-      setLeaguesLoading(false);
-    });
+          return availableLeagues[0]?.id ?? null;
+        });
+        setRulesDiag(null);
+        setLeaguesLoading(false);
+      },
+      (error) => {
+        console.error('Leagues snapshot error:', {
+          code: (error as any)?.code,
+          message: (error as any)?.message,
+          uid: user?.uid,
+        });
+        setRulesDiag('Fallo permisos en /leagues. Revisa membresia o reglas.');
+        setLeaguesLoading(false);
+      }
+    );
 
     return () => {
       unsubLeagues();
@@ -149,14 +163,28 @@ function AppContent() {
     }
 
     setPicksLoading(true);
-    const unsubPicks = onSnapshot(doc(db, 'leagues', selectedLeagueId, 'picks', user.uid), (pickDoc) => {
-      if (pickDoc.exists()) {
-        setUserPicks(pickDoc.data());
-      } else {
-        setUserPicks(null);
+    const unsubPicks = onSnapshot(
+      doc(db, 'leagues', selectedLeagueId, 'picks', user.uid),
+      (pickDoc) => {
+        if (pickDoc.exists()) {
+          setUserPicks(pickDoc.data());
+        } else {
+          setUserPicks(null);
+        }
+        setRulesDiag(null);
+        setPicksLoading(false);
+      },
+      (error) => {
+        console.error('Picks snapshot error:', {
+          code: (error as any)?.code,
+          message: (error as any)?.message,
+          uid: user?.uid,
+          leagueId: selectedLeagueId,
+        });
+        setRulesDiag('Fallo permisos en /leagues/{leagueId}/picks/{uid}.');
+        setPicksLoading(false);
       }
-      setPicksLoading(false);
-    });
+    );
 
     return () => {
       unsubPicks();
@@ -216,6 +244,13 @@ function AppContent() {
     <div className="min-h-screen bg-[#F5F2ED] text-[#1A1A1A] selection:bg-[#FF3E00]/20">
       <Header activeLeagueId={selectedLeagueId} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {rulesDiag && (
+          <div className="mb-6 border-2 border-[#FF3E00] bg-[#FFF1EC] p-4">
+            <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">Diagnostico de reglas (Rules diagnostics)</p>
+            <p className="mt-2 text-xs font-black uppercase tracking-widest">{rulesDiag}</p>
+          </div>
+        )}
+
         <div className="mb-10 border-4 border-black bg-white p-6">
           <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-2">Crear liga privada (Create private league)</p>
           <p className="text-xs font-black uppercase tracking-widest opacity-60 mb-4">
