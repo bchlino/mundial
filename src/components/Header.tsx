@@ -33,18 +33,18 @@ export const Header: React.FC<HeaderProps> = ({ activeLeagueId }) => {
   };
 
   return (
-    <header className="bg-[#F5F2ED] text-[#1A1A1A] border-b-2 border-[#1A1A1A] mx-4 sm:mx-8 lg:mx-12">
-      <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col sm:flex-row items-baseline justify-between gap-4">
-        <div>
-          <h1 className="text-5xl sm:text-7xl font-black tracking-tighter leading-none italic uppercase font-serif">
+    <header className="bg-[#F5F2ED] text-[#1A1A1A] border-b-2 border-[#1A1A1A] mx-2 sm:mx-8 lg:mx-12">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-5 sm:py-8 flex flex-col sm:flex-row items-start sm:items-baseline justify-between gap-4">
+        <div className="min-w-0 w-full sm:w-auto">
+          <h1 className="text-4xl sm:text-7xl font-black tracking-tighter leading-none italic uppercase font-serif wrap-break-word">
             Mundial <span className="text-[#FF3E00]">Draft</span>
           </h1>
-          <p className="text-[10px] tracking-[0.3em] font-black mt-2 uppercase opacity-60 font-sans">
+          <p className="text-[9px] sm:text-[10px] tracking-[0.18em] sm:tracking-[0.3em] font-black mt-2 uppercase opacity-60 font-sans">
             Liga Privada (Private League) // Temporada (Season) 2026
           </p>
         </div>
 
-        <div className="flex items-center gap-6 self-end sm:self-auto">
+        <div className="flex items-center gap-3 sm:gap-6 self-end sm:self-auto w-full sm:w-auto justify-end">
           {user && (
             <button
               onClick={handleCopyInviteLink}
@@ -54,7 +54,7 @@ export const Header: React.FC<HeaderProps> = ({ activeLeagueId }) => {
             </button>
           )}
           {user ? (
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3 sm:gap-6 max-w-full">
               <div className="text-right hidden sm:block">
                 {isEditing ? (
                   <div className="flex items-center gap-2">
@@ -74,12 +74,12 @@ export const Header: React.FC<HeaderProps> = ({ activeLeagueId }) => {
                     </button>
                   </div>
                 ) : (
-                  <div 
+                  <div
                     onClick={() => {
                       setNewName(profile?.displayName || '');
                       setIsEditing(true);
                     }}
-                    className="font-serif italic text-2xl tracking-tight leading-none group cursor-pointer hover:text-[#FF3E00] transition-colors"
+                    className="font-serif italic text-2xl tracking-tight leading-none group cursor-pointer hover:text-[#FF3E00] transition-colors truncate max-w-70"
                     title="Editar nombre (Edit name)"
                   >
                     {profile?.displayName?.split(' ')[0] || 'Jugador (Player)'} <span className="text-xs uppercase font-sans not-italic font-black border-2 border-black px-2 py-0.5 ml-1">Sala de draft (Draft room)</span>
@@ -87,12 +87,12 @@ export const Header: React.FC<HeaderProps> = ({ activeLeagueId }) => {
                 )}
                 <div className="text-[10px] font-black uppercase opacity-60 mt-1">{profile?.email || 'Acceso con Google (Google access)'}</div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                 {profile?.photoURL ? (
-                  <img src={profile.photoURL} alt="" className="w-12 h-12 grayscale border-2 border-black" referrerPolicy="no-referrer" />
+                  <img src={profile.photoURL} alt="" className="w-10 h-10 sm:w-12 sm:h-12 grayscale border-2 border-black" referrerPolicy="no-referrer" />
                 ) : (
-                  <div className="w-12 h-12 bg-black flex items-center justify-center">
-                    <UserIcon className="w-6 h-6 text-white" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-black flex items-center justify-center">
+                    <UserIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                 )}
                 <button 
@@ -107,13 +107,22 @@ export const Header: React.FC<HeaderProps> = ({ activeLeagueId }) => {
           ) : (
             <button 
               onClick={signInWithGoogle}
-              className="border-4 border-black px-6 py-2.5 text-xs font-black uppercase hover:bg-black hover:text-white transition-all active:scale-95 flex items-center gap-2"
+              className="border-4 border-black px-4 sm:px-6 py-2 text-[10px] sm:text-xs font-black uppercase hover:bg-black hover:text-white transition-all active:scale-95 flex items-center gap-2"
             >
               <LogIn className="w-5 h-5" />
               <span>Entrar</span>
             </button>
           )}
         </div>
+
+        {user && (
+          <button
+            onClick={handleCopyInviteLink}
+            className="sm:hidden w-full border-2 border-black px-4 py-2 text-[10px] font-black uppercase hover:bg-black hover:text-white transition-all"
+          >
+            Copiar enlace de invitacion (Copy invite link)
+          </button>
+        )}
       </div>
     </header>
   );

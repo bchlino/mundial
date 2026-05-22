@@ -131,12 +131,12 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
   };
 
   return (
-    <div className="space-y-16">
+   <div className="space-y-10 sm:space-y-16">
       {/* My Team Section */}
       <section>
-        <div className="flex items-center justify-between mb-12 pb-6 border-b-4 border-black">
-           <div className="flex items-baseline gap-6">
-              <h2 className="text-6xl font-serif font-black italic uppercase tracking-tighter">Mi Plantilla</h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 sm:mb-12 pb-4 sm:pb-6 border-b-4 border-black gap-4">
+           <div className="flex items-baseline gap-3 sm:gap-6">
+              <h2 className="text-4xl sm:text-6xl font-serif font-black italic uppercase tracking-tighter">Mi Plantilla</h2>
               <p className="text-xs font-black uppercase tracking-[0.4em] opacity-40 hidden sm:block">Asset Selection // Confirmed</p>
            </div>
            
@@ -147,12 +147,12 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
            )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 sm:gap-8">
            {myTeams.map(team => (
              <motion.div 
                key={team.id}
                className={cn(
-                 "relative p-8 border-4 transition-all flex flex-col group min-h-80",
+                         "relative p-5 sm:p-8 border-4 transition-all flex flex-col group min-h-72 sm:min-h-80",
                  myPicks?.tapadoId === team.id 
                   ? "bg-black text-white border-black shadow-[12px_12px_0px_0px_rgba(255,62,0,1)]" 
                   : "bg-white border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
@@ -164,7 +164,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
 
                <div className="text-6xl mb-8 group-hover:scale-110 transition-transform origin-left">{team.flag}</div>
                <span className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1 block">Nivel nacional (National tier)</span>
-               <h3 className="text-4xl font-serif italic font-black uppercase mb-8 leading-none">{team.name}</h3>
+               <h3 className="text-3xl sm:text-4xl font-serif italic font-black uppercase mb-8 leading-none wrap-break-word">{team.name}</h3>
                
                <div className="mt-auto pt-6 border-t-2 border-black/10">
                  <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest mb-4">
@@ -202,7 +202,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
            ))}
 
            {Array.from({ length: 4 - myTeams.length }).map((_, i) => (
-             <div key={i} className="p-8 border-4 border-dashed border-black/20 bg-black/5 flex flex-col items-center justify-center text-center gap-4 min-h-80">
+             <div key={i} className="p-5 sm:p-8 border-4 border-dashed border-black/20 bg-black/5 flex flex-col items-center justify-center text-center gap-4 min-h-72 sm:min-h-80">
                 <div className="w-12 h-12 border-2 border-black/20 flex items-center justify-center">
                    <Users className="w-6 h-6 opacity-20" />
                 </div>
@@ -214,8 +214,8 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
 
       {/* Participants Feed */}
       <section>
-         <div className="flex items-center justify-between mb-8 pb-4 border-b-2 border-black/10">
-            <h2 className="text-3xl font-serif italic font-black uppercase flex items-center gap-4">
+         <div className="flex items-center justify-between mb-6 sm:mb-8 pb-4 border-b-2 border-black/10 gap-4">
+            <h2 className="text-2xl sm:text-3xl font-serif italic font-black uppercase flex items-center gap-3 sm:gap-4">
                <span className="bg-black text-white w-10 h-10 flex items-center justify-center not-italic font-sans text-xl">L</span>
                Clasificacion (Leaderboard)
             </h2>
@@ -236,7 +236,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
          </div>
 
          {view === 'grid' ? (
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
               {league.participants.map((uid, idx) => {
                 const userPicks = picks[uid];
                 const teams = WORLD_CUP_TEAMS.filter(t => userPicks?.teamIds?.includes(t.id));
@@ -246,7 +246,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                   <motion.div 
                     key={uid}
                     className={cn(
-                      "p-8 border-4 transition-all relative",
+                      "p-5 sm:p-8 border-4 transition-all relative",
                       isMe ? "bg-white border-black shadow-[10px_10px_0px_0px_rgba(255,62,0,1)]" : "bg-white border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]"
                     )}
                   >
@@ -257,7 +257,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                     <div className="flex items-center gap-4 mb-8">
                        <img src={users[uid]?.photoURL} className="w-12 h-12 border-2 border-black" referrerPolicy="no-referrer" />
                        <div>
-                          <h4 className="font-serif italic text-2xl leading-none">
+                          <h4 className="font-serif italic text-xl sm:text-2xl leading-none wrap-break-word">
                              {users[uid]?.displayName}
                           </h4>
                           <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{calcUserPoints(uid)} PUNTOS (POINTS)</p>
@@ -282,8 +282,8 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
               })}
            </div>
          ) : (
-           <div className="bg-white border-4 border-black overflow-hidden shadow-[12px_12px_0px_0px_rgba(0,0,0,0.1)]">
-              <table className="w-full text-left font-sans">
+           <div className="bg-white border-4 border-black overflow-x-auto shadow-[12px_12px_0px_0px_rgba(0,0,0,0.1)]">
+              <table className="w-full min-w-215 text-left font-sans">
                  <thead>
                     <tr className="bg-black text-white text-[10px] font-black uppercase tracking-[0.2em]">
                        <th className="px-8 py-4">Posicion (Rank)</th>
@@ -349,28 +349,28 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
       </section>
 
       {/* Rules Notice */}
-      <div className="bg-black text-white p-12 border-l-16 border-[#FF3E00] flex flex-col md:flex-row items-center gap-12 relative overflow-hidden">
+      <div className="bg-black text-white p-6 sm:p-12 border-l-8 sm:border-l-16 border-[#FF3E00] flex flex-col md:flex-row items-start md:items-center gap-6 sm:gap-12 relative overflow-hidden">
          <div className="absolute top-0 right-0 opacity-5 text-9xl font-serif font-black italic select-none">RULES</div>
          <div className="flex-1 relative z-10">
-            <h3 className="text-xs font-black uppercase tracking-[0.5em] mb-6 opacity-60">Matriz de puntuacion (Scoring matrix) // Edicion 2026</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
+            <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.22em] sm:tracking-[0.5em] mb-4 sm:mb-6 opacity-60">Matriz de puntuacion (Scoring matrix) // Edicion 2026</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 sm:gap-12">
                <div>
-                  <p className="font-serif italic text-2xl mb-2 underline decoration-[#FF3E00]">Fase de grupos (Groups)</p>
+                  <p className="font-serif italic text-xl sm:text-2xl mb-2 underline decoration-[#FF3E00]">Fase de grupos (Groups)</p>
                   <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Victoria (Win): 3 pts</p>
                   <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Empate (Draw): 1 pt</p>
                </div>
                <div>
-                  <p className="font-serif italic text-2xl mb-2 underline decoration-[#FF3E00]">Eliminatorias (Knockout)</p>
+                  <p className="font-serif italic text-xl sm:text-2xl mb-2 underline decoration-[#FF3E00]">Eliminatorias (Knockout)</p>
                   <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Octavos (Round of 16): +4 pts</p>
                   <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Cuartos (Quarterfinals): +6 pts</p>
                </div>
                <div>
-                  <p className="font-serif italic text-2xl mb-2 underline decoration-[#FF3E00]">Fase final (Final rounds)</p>
+                  <p className="font-serif italic text-xl sm:text-2xl mb-2 underline decoration-[#FF3E00]">Fase final (Final rounds)</p>
                   <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Semifinal (Semis): +8 pts</p>
                   <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Final (Final): +10 pts</p>
                </div>
                <div>
-                  <p className="font-serif italic text-2xl mb-2 text-[#FF3E00]">El tapado (Wildcard)</p>
+                  <p className="font-serif italic text-xl sm:text-2xl mb-2 text-[#FF3E00]">El tapado (Wildcard)</p>
                   <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">Duplica puntos (Double pts) en eliminatorias</p>
                   <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">Penalizacion de -5 pts si queda fuera</p>
                </div>

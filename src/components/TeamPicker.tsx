@@ -52,20 +52,20 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
   const allSelected = Object.keys(selections).length === 4;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-12">
+    <div className="max-w-6xl mx-auto space-y-8 sm:space-y-12 pb-28 sm:pb-0">
       {/* Editorial Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b-8 border-black pb-8">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 sm:gap-8 border-b-8 border-black pb-6 sm:pb-8">
         <div>
-          <span className="inline-block px-3 py-1 bg-[#FF3E00] text-white text-[10px] font-black uppercase tracking-widest mb-6 translate-y-[-4px]">
+          <span className="inline-block px-3 py-1 bg-[#FF3E00] text-white text-[10px] font-black uppercase tracking-widest mb-6 -translate-y-1">
             Fase 01 // Seleccion de plantilla (Personnel selection)
           </span>
-          <h2 className="text-6xl sm:text-8xl font-serif font-black italic uppercase tracking-tighter leading-none">
+          <h2 className="text-4xl sm:text-8xl font-serif font-black italic uppercase tracking-tighter leading-none">
             Elegir <span className="text-[#FF3E00]">Plantilla</span>
           </h2>
         </div>
-        <div className="text-right">
+        <div className="text-left md:text-right">
            <p className="text-xs font-black uppercase tracking-[0.3em] opacity-40 mb-2">Estado general (Aggregate status)</p>
-           <div className="flex gap-2 justify-end">
+           <div className="flex gap-2 justify-start md:justify-end">
               {pots.map(p => (
                 <div 
                   key={p} 
@@ -81,20 +81,20 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {pots.map(p => (
           <button
             key={p}
             onClick={() => setCurrentPot(p)}
             className={cn(
-              "p-6 border-4 font-black uppercase text-xs tracking-[0.2em] transition-all flex flex-col gap-2 relative",
+              "p-4 sm:p-6 border-4 font-black uppercase text-[10px] sm:text-xs tracking-[0.12em] sm:tracking-[0.2em] transition-all flex flex-col gap-2 relative",
               currentPot === p 
                 ? "bg-black text-white translate-x-1 translate-y-1 shadow-none" 
                 : "bg-white text-black hover:bg-[#F5F2ED] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none translate-x-0 active:translate-x-1 active:translate-y-1"
             )}
           >
             <span>Bombo (Tier) {p}</span>
-            <span className="font-serif italic text-2xl normal-case">
+            <span className="font-serif italic text-lg sm:text-2xl normal-case leading-tight">
               {selections[p] ? WORLD_CUP_TEAMS.find(t => t.id === selections[p])?.name : 'Espacio vacio (Empty slot)'}
             </span>
             {currentPot === p && (
@@ -104,7 +104,7 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-8">
         {WORLD_CUP_TEAMS.filter(t => t.pot === currentPot).map(team => {
           const isSelected = currentSelection === team.id;
           return (
@@ -113,16 +113,16 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
               whileHover={{ x: 4, y: -4 }}
               onClick={() => handlePick(team.id)}
               className={cn(
-                "relative p-8 border-4 transition-all text-left flex flex-col min-h-[220px]",
+                "relative p-5 sm:p-8 border-4 transition-all text-left flex flex-col min-h-50 sm:min-h-55",
                 isSelected 
                   ? "bg-black text-white border-black shadow-[10px_10px_0px_0px_rgba(255,62,0,1)]" 
                   : "bg-white border-black hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,0.1)] cursor-pointer"
               )}
             >
               <div className="flex-1 mt-6">
-                <div className="text-5xl mb-6">{team.flag}</div>
+                <div className="text-4xl sm:text-5xl mb-4 sm:mb-6">{team.flag}</div>
                 <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1 block">Nivel nacional (National tier)</span>
-                <h4 className="font-serif italic text-4xl font-black uppercase leading-tight">{team.name}</h4>
+                <h4 className="font-serif italic text-3xl sm:text-4xl font-black uppercase leading-tight wrap-break-word">{team.name}</h4>
               </div>
               
               <div className="mt-8 pt-6 border-t border-black/10 flex justify-between items-end">
@@ -146,15 +146,15 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
           <motion.div 
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            className="fixed bottom-12 left-0 right-0 px-4 flex justify-center z-50"
+            className="fixed bottom-4 left-0 right-0 px-4 flex justify-center z-50"
           >
             <button
               onClick={handleFinalize}
               disabled={isSubmitting}
-              className="bg-black text-white px-12 py-8 text-3xl font-serif italic font-black uppercase tracking-tighter border-8 border-white shadow-[24px_24px_0px_0px_rgba(255,62,0,1)] hover:bg-[#FF3E00] transition-all flex items-center gap-8 group"
+              className="w-full max-w-xl bg-black text-white px-5 sm:px-12 py-4 sm:py-8 text-base sm:text-3xl font-serif italic font-black uppercase tracking-tight sm:tracking-tighter border-4 sm:border-8 border-white shadow-[12px_12px_0px_0px_rgba(255,62,0,1)] sm:shadow-[24px_24px_0px_0px_rgba(255,62,0,1)] hover:bg-[#FF3E00] transition-all flex items-center justify-center gap-3 sm:gap-8 group"
             >
               {isSubmitting ? 'Sincronizando (Syncing)...' : 'Confirmar selecciones (Confirm matrix selections)'}
-              <Trophy className="w-10 h-10 group-hover:rotate-12 transition-transform" />
+              <Trophy className="w-6 h-6 sm:w-10 sm:h-10 group-hover:rotate-12 transition-transform" />
             </button>
           </motion.div>
         )}

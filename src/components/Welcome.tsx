@@ -25,8 +25,8 @@ export const Welcome: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-24">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 pb-16 sm:pb-24">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-16 items-center">
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
@@ -35,10 +35,10 @@ export const Welcome: React.FC = () => {
           <span className="inline-block px-3 py-1 bg-black text-white text-[10px] font-black uppercase tracking-widest mb-8">
             Mundial 2026 • Edicion editorial (Editorial edition)
           </span>
-          <h1 className="text-6xl sm:text-8xl font-black tracking-tighter mb-10 leading-[0.85] italic uppercase font-serif">
+          <h1 className="text-4xl sm:text-8xl font-black tracking-tighter mb-6 sm:mb-10 leading-[0.9] sm:leading-[0.85] italic uppercase font-serif">
             La <span className="text-[#FF3E00]">nueva</span> generacion de <span className="underline decoration-[#FF3E00] decoration-8 underline-offset-8">porras</span>
           </h1>
-          <p className="text-xl text-[#1A1A1A] mb-12 max-w-xl leading-tight font-medium opacity-80">
+          <p className="text-base sm:text-xl text-[#1A1A1A] mb-8 sm:mb-12 max-w-xl leading-tight font-medium opacity-80">
             Entra con tu cuenta de Google y la app te ubicara automaticamente en tu liga (Enter with Google and get placed in your league automatically).
           </p>
 
@@ -53,11 +53,11 @@ export const Welcome: React.FC = () => {
               type="button"
               onClick={handleJoin}
               disabled={isSubmitting}
-              className="w-full bg-black text-white py-6 text-2xl font-black uppercase tracking-tighter hover:bg-[#FF3E00] transition-all disabled:opacity-50 flex items-center justify-center gap-4 group"
+              className="w-full bg-black text-white py-4 sm:py-6 text-base sm:text-2xl font-black uppercase tracking-tight sm:tracking-tighter hover:bg-[#FF3E00] transition-all disabled:opacity-50 flex items-center justify-center gap-2 sm:gap-4 group"
             >
               {isSubmitting ? 'CONECTANDO (CONNECTING)...' : 'ENTRAR CON GOOGLE (ENTER WITH GOOGLE)'}
-              <LogIn className="w-8 h-8" />
-              <ArrowRight className="w-8 h-8 group-hover:translate-x-2 transition-transform" />
+              <LogIn className="w-5 h-5 sm:w-8 sm:h-8" />
+              <ArrowRight className="w-5 h-5 sm:w-8 sm:h-8 group-hover:translate-x-2 transition-transform" />
             </button>
             <p className="text-[10px] font-black uppercase tracking-widest opacity-40 text-center">
               Una cuenta, varias ligas // Identidad segura por usuario (One account, multiple leagues)
@@ -110,9 +110,9 @@ export const Welcome: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.25 }}
-        className="mt-16 border-4 border-black bg-white p-6 md:p-10"
+        className="mt-12 sm:mt-16 border-4 border-black bg-white p-4 sm:p-6 md:p-10"
       >
-        <h2 className="text-4xl md:text-5xl font-serif italic font-black uppercase leading-none mb-6">
+        <h2 className="text-3xl md:text-5xl font-serif italic font-black uppercase leading-none mb-4 sm:mb-6">
           Como funciona (How it works)
         </h2>
         <p className="text-xs font-black uppercase tracking-widest opacity-60 mb-8">
@@ -122,7 +122,7 @@ export const Welcome: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
           <article className="border-2 border-black p-5 bg-[#F5F2ED]">
             <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">Paso 1</p>
-            <h3 className="text-2xl font-serif italic font-black uppercase mb-2">Login con Google</h3>
+            <h3 className="text-xl sm:text-2xl font-serif italic font-black uppercase mb-2">Login con Google</h3>
             <p className="text-xs font-black uppercase tracking-wider opacity-70">
               Debes entrar con tu cuenta de Google. Asi cada jugador tiene identidad unica y segura.
             </p>
@@ -130,7 +130,7 @@ export const Welcome: React.FC = () => {
 
           <article className="border-2 border-black p-5 bg-[#F5F2ED]">
             <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">Paso 2</p>
-            <h3 className="text-2xl font-serif italic font-black uppercase mb-2">Liga privada</h3>
+            <h3 className="text-xl sm:text-2xl font-serif italic font-black uppercase mb-2">Liga privada</h3>
             <p className="text-xs font-black uppercase tracking-wider opacity-70">
               Creas o te unes por enlace de invitacion. Solo participantes de tu liga ven la clasificacion.
             </p>
@@ -138,7 +138,7 @@ export const Welcome: React.FC = () => {
 
           <article className="border-2 border-black p-5 bg-[#F5F2ED]">
             <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">Paso 3</p>
-            <h3 className="text-2xl font-serif italic font-black uppercase mb-2">Elige 4 equipos</h3>
+            <h3 className="text-xl sm:text-2xl font-serif italic font-black uppercase mb-2">Elige 4 equipos</h3>
             <p className="text-xs font-black uppercase tracking-wider opacity-70">
               Tomas 1 equipo por bombo: A, B, C y D. Los bombos separan niveles y siguen orden de ranking FIFA.
             </p>
@@ -146,7 +146,7 @@ export const Welcome: React.FC = () => {
 
           <article className="border-2 border-black p-5 bg-[#F5F2ED]">
             <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">Paso 4</p>
-            <h3 className="text-2xl font-serif italic font-black uppercase mb-2">Tapado opcional</h3>
+            <h3 className="text-xl sm:text-2xl font-serif italic font-black uppercase mb-2">Tapado opcional</h3>
             <p className="text-xs font-black uppercase tracking-wider opacity-70">
               Puedes marcar 1 de tus 4 equipos como tapado. Si gana en eliminatorias, suma doble; si queda fuera, penaliza -5.
             </p>
@@ -154,7 +154,7 @@ export const Welcome: React.FC = () => {
         </div>
 
         <div className="mt-8 border-2 border-black p-5">
-          <h3 className="text-2xl font-serif italic font-black uppercase mb-4">Puntuacion (Scoring)</h3>
+          <h3 className="text-xl sm:text-2xl font-serif italic font-black uppercase mb-4">Puntuacion (Scoring)</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 border border-black">
               <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">Grupos</p>
