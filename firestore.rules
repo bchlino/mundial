@@ -67,7 +67,8 @@ service cloud.firestore {
     }
 
     match /leagues/{leagueId} {
-      allow get, list: if isSignedIn() && (debugMode() || isLeagueMemberData(resource.data));
+      allow get: if isSignedIn() && (debugMode() || isLeagueMemberData(resource.data));
+      allow list: if isSignedIn();
       allow create: if isSignedIn() && isValidLeague(incoming()) && incoming().adminId == request.auth.uid;
       allow update: if isSignedIn() && (
         (debugMode()) ||
