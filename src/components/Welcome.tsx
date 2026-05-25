@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Trophy, Users, ShieldCheck, LogIn, ArrowRight } from 'lucide-react';
 import { signInWithGoogle } from '../lib/firebase';
+import { useLanguage } from '../lib/LanguageContext';
 
 export const Welcome: React.FC = () => {
+  const { tr } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
 
@@ -15,9 +17,9 @@ export const Welcome: React.FC = () => {
     } catch (error: any) {
       console.error('Error logging in:', error);
       if (error.code === 'auth/popup-closed-by-user') {
-        setErrorStatus('INICIO DE SESION CANCELADO. VUELVE A INTENTARLO. (LOGIN CANCELED. TRY AGAIN.)');
+        setErrorStatus(tr('INICIO DE SESION CANCELADO. VUELVE A INTENTARLO.', 'LOGIN CANCELED. TRY AGAIN.'));
       } else {
-        setErrorStatus('NO SE PUDO COMPLETAR EL LOGIN CON GOOGLE. INTENTALO DE NUEVO. (GOOGLE LOGIN FAILED. TRY AGAIN.)');
+        setErrorStatus(tr('NO SE PUDO COMPLETAR EL LOGIN CON GOOGLE. INTENTALO DE NUEVO.', 'GOOGLE LOGIN FAILED. TRY AGAIN.'));
       }
     } finally {
       setIsSubmitting(false);
@@ -36,10 +38,10 @@ export const Welcome: React.FC = () => {
             Mundial 2026
           </span>
           <h1 className="text-4xl sm:text-6xl font-black tracking-tighter mb-6 sm:mb-10 leading-[0.9] sm:leading-[0.85] italic uppercase font-serif">
-            La <span className="text-[#FF3E00]">nueva</span> generacion de <span className="underline decoration-[#FF3E00] decoration-8 underline-offset-8">porras</span>
+            {tr('La nueva generación de porras', 'The new generation of sports pools')}
           </h1>
           <p className="text-base sm:text-xl text-[#1A1A1A] mb-8 sm:mb-12 max-w-xl leading-tight font-medium opacity-80">
-            Entra con tu cuenta de Google y la app te ubicara automaticamente en tu liga (Enter with Google and get placed in your league automatically).
+            {tr('Entra con tu cuenta de Google y la app te ubicará automáticamente en tu liga.', 'Sign in with Google and the app will place you in your league automatically.')}
           </p>
 
           <div className="max-w-md space-y-4">
@@ -55,12 +57,12 @@ export const Welcome: React.FC = () => {
               disabled={isSubmitting}
               className="w-full bg-black text-white p-4 sm:py-6 text-base sm:text-2xl font-black uppercase tracking-tight sm:tracking-tighter hover:bg-[#FF3E00] transition-all disabled:opacity-50 flex items-center justify-center gap-2 sm:gap-4 group"
             >
-              {isSubmitting ? 'CONECTANDO (CONNECTING)...' : 'ENTRAR CON GOOGLE (ENTER WITH GOOGLE)'}
+              {isSubmitting ? tr('CONECTANDO...', 'CONNECTING...') : tr('ENTRAR CON GOOGLE', 'ENTER WITH GOOGLE')}
               <LogIn className="w-5 h-5 sm:w-8 sm:h-8" />
               {/* <ArrowRight className="w-5 h-5 sm:w-8 sm:h-8 group-hover:translate-x-2 transition-transform" /> */}
             </button>
             <p className="text-[10px] font-black uppercase tracking-widest opacity-40 text-center">
-              Una cuenta, varias ligas // Identidad segura por usuario (One account, multiple leagues)
+              {tr('Una cuenta, varias ligas // Identidad segura por usuario', 'One account, multiple leagues // Secure user identity')}
             </p>
           </div>
         </motion.div>
@@ -77,18 +79,18 @@ export const Welcome: React.FC = () => {
               {[
                 {
                   icon: Users,
-                  title: "Draft serpiente (Snake draft)",
-                  desc: "Turnos justos por orden. Tu estrategia empieza en la seleccion."
+                  title: tr('Draft serpiente', 'Snake draft'),
+                  desc: tr('Turnos justos por orden. Tu estrategia empieza en la seleccion.', 'Fair turns by order. Your strategy starts in the pick phase.')
                 },
                 {
                   icon: ShieldCheck,
-                  title: "Propiedad exclusiva (Exclusive ownership)",
-                  desc: "Si eliges Brasil, nadie mas puede tomarlo. Rivalidad real al 100%."
+                  title: tr('Propiedad exclusiva', 'Exclusive ownership'),
+                  desc: tr('Si eliges Brasil, nadie mas puede tomarlo. Rivalidad real al 100%.', 'If you pick Brazil, nobody else can take it. Real rivalry, 100%.')
                 },
                 {
                   icon: Trophy,
-                  title: "El tapado (Wildcard)",
-                  desc: "Elige un tapado. Si llega lejos, duplicas tus puntos."
+                  title: tr('El tapado', 'Wildcard'),
+                  desc: tr('Elige un tapado. Si llega lejos, duplicas tus puntos.', 'Pick a wildcard. If it goes far, your points are doubled.')
                 }
               ].map((feature, i) => (
                 <div key={i} className="flex gap-8 group">
@@ -113,64 +115,64 @@ export const Welcome: React.FC = () => {
         className="mt-12 sm:mt-16 border-4 border-black bg-white p-4 sm:p-6 md:p-10"
       >
         <h2 className="text-3xl md:text-5xl font-serif italic font-black uppercase leading-none mb-4 sm:mb-6">
-          Como funciona (How it works)
+          {tr('Cómo funciona', 'How it works')}
         </h2>
         <p className="text-xs font-black uppercase tracking-widest opacity-60 mb-8">
-          Guia rapida para dummies (Quick guide for dummies)
+          {tr('Guía rápida para dummies', 'Quick guide')}
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
           <article className="border-2 border-black p-5 bg-[#F5F2ED]">
             <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">Paso 1</p>
-            <h3 className="text-xl sm:text-2xl font-serif italic font-black uppercase mb-2">Login con Google</h3>
+            <h3 className="text-xl sm:text-2xl font-serif italic font-black uppercase mb-2">{tr('Login con Google', 'Google login')}</h3>
             <p className="text-xs font-black uppercase tracking-wider opacity-70">
-              Debes entrar con tu cuenta de Google. Asi cada jugador tiene identidad unica y segura.
+              {tr('Debes entrar con tu cuenta de Google. Así cada jugador tiene identidad única y segura.', 'Sign in with your Google account. This gives each player a unique and secure identity.')}
             </p>
           </article>
 
           <article className="border-2 border-black p-5 bg-[#F5F2ED]">
             <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">Paso 2</p>
-            <h3 className="text-xl sm:text-2xl font-serif italic font-black uppercase mb-2">Liga privada</h3>
+            <h3 className="text-xl sm:text-2xl font-serif italic font-black uppercase mb-2">{tr('Liga privada', 'Private league')}</h3>
             <p className="text-xs font-black uppercase tracking-wider opacity-70">
-              Creas o te unes por enlace de invitacion. Solo participantes de tu liga ven la clasificacion.
+              {tr('Creas o te unes por enlace de invitación. Solo participantes de tu liga ven la clasificación.', 'Create or join via invite link. Only league participants can see the leaderboard.')}
             </p>
           </article>
 
           <article className="border-2 border-black p-5 bg-[#F5F2ED]">
             <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">Paso 3</p>
-            <h3 className="text-xl sm:text-2xl font-serif italic font-black uppercase mb-2">Elige 4 equipos</h3>
+            <h3 className="text-xl sm:text-2xl font-serif italic font-black uppercase mb-2">{tr('Elige 4 equipos', 'Choose 4 teams')}</h3>
             <p className="text-xs font-black uppercase tracking-wider opacity-70">
-              Tomas 1 equipo por bombo: A, B, C y D. Los bombos separan niveles y siguen orden de ranking FIFA.
+              {tr('Tomas 1 equipo por bombo: A, B, C y D. Los bombos separan niveles y siguen orden de ranking FIFA.', 'Pick 1 team from each pot: A, B, C and D. Pots separate levels and follow FIFA ranking order.')}
             </p>
           </article>
 
           <article className="border-2 border-black p-5 bg-[#F5F2ED]">
             <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">Paso 4</p>
-            <h3 className="text-xl sm:text-2xl font-serif italic font-black uppercase mb-2">Tapado opcional</h3>
+            <h3 className="text-xl sm:text-2xl font-serif italic font-black uppercase mb-2">{tr('Tapado opcional', 'Optional wildcard')}</h3>
             <p className="text-xs font-black uppercase tracking-wider opacity-70">
-              Puedes marcar 1 de tus 4 equipos como tapado. Si gana en eliminatorias, suma doble; si queda fuera, penaliza -5.
+              {tr('Puedes marcar 1 de tus 4 equipos como tapado. Si gana en eliminatorias, suma doble; si queda fuera, penaliza -5.', 'You can mark 1 of your 4 teams as wildcard. If it wins in knockouts, points are doubled; if it is eliminated, it gets -5 penalty.')}
             </p>
           </article>
         </div>
 
         <div className="mt-8 border-2 border-black p-5">
-          <h3 className="text-xl sm:text-2xl font-serif italic font-black uppercase mb-4">Puntuacion (Scoring)</h3>
+          <h3 className="text-xl sm:text-2xl font-serif italic font-black uppercase mb-4">{tr('Puntuación', 'Scoring')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 border border-black">
-              <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">Grupos</p>
-              <p className="text-xs font-black uppercase tracking-wider">Victoria: +3</p>
-              <p className="text-xs font-black uppercase tracking-wider">Empate: +1</p>
-              <p className="text-xs font-black uppercase tracking-wider">Derrota: +0</p>
+              <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">{tr('Grupos', 'Groups')}</p>
+              <p className="text-xs font-black uppercase tracking-wider">{tr('Victoria: +3', 'Win: +3')}</p>
+              <p className="text-xs font-black uppercase tracking-wider">{tr('Empate: +1', 'Draw: +1')}</p>
+              <p className="text-xs font-black uppercase tracking-wider">{tr('Derrota: +0', 'Loss: +0')}</p>
             </div>
             <div className="p-4 border border-black">
-              <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">Eliminatorias</p>
-              <p className="text-xs font-black uppercase tracking-wider">Octavos: +4</p>
-              <p className="text-xs font-black uppercase tracking-wider">Cuartos: +6</p>
+              <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">{tr('Eliminatorias', 'Knockout')}</p>
+              <p className="text-xs font-black uppercase tracking-wider">{tr('Octavos: +4', 'Round of 16: +4')}</p>
+              <p className="text-xs font-black uppercase tracking-wider">{tr('Cuartos: +6', 'Quarterfinals: +6')}</p>
             </div>
             <div className="p-4 border border-black">
-              <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">Finales</p>
-              <p className="text-xs font-black uppercase tracking-wider">Semifinal: +8</p>
-              <p className="text-xs font-black uppercase tracking-wider">Final: +10</p>
+              <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">{tr('Finales', 'Final rounds')}</p>
+              <p className="text-xs font-black uppercase tracking-wider">{tr('Semifinal: +8', 'Semifinal: +8')}</p>
+              <p className="text-xs font-black uppercase tracking-wider">{tr('Final: +10', 'Final: +10')}</p>
             </div>
           </div>
         </div>

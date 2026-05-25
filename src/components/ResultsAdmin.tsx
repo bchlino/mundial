@@ -4,6 +4,7 @@ import { db } from '../lib/firebase';
 import { MatchResult } from '../lib/results';
 import { WORLD_CUP_TEAMS } from '../lib/teams';
 import { useAuth } from '../lib/AuthContext';
+import { useLanguage } from '../lib/LanguageContext';
 
 type Stage = MatchResult['stage'];
 
@@ -37,14 +38,6 @@ const STAGE_OPTIONS: Array<{ value: Stage; label: string }> = [
   { value: 'final', label: 'Final (Final)' },
 ];
 
-const STAGE_LABEL: Record<Stage, string> = {
-  groups: 'Grupos',
-  round16: 'Octavos',
-  quarters: 'Cuartos',
-  semis: 'Semifinal',
-  final: 'Final',
-};
-
 const normalizeStage = (value: string): Stage => {
   if (value === 'round_of_16') return 'round16';
   if (value === 'quarterfinals') return 'quarters';
@@ -57,6 +50,7 @@ const normalizeStage = (value: string): Stage => {
 
 const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
   const { user } = useAuth();
+  const { tr } = useLanguage();
   const [formData, setFormData] = useState<MatchFormState>(INITIAL_FORM);
   const [matches, setMatches] = useState<MatchResult[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -64,6 +58,14 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [readError, setReadError] = useState<string | null>(null);
+
+  const stageOptions = useMemo<Array<{ value: Stage; label: string }>>(() => [
+    { value: 'groups', label: tr('Grupos', 'Groups') },
+    { value: 'round16', label: tr('Octavos', 'Round of 16') },
+    { value: 'quarters', label: tr('Cuartos', 'Quarterfinals') },
+    { value: 'semis', label: tr('Semifinal', 'Semifinals') },
+    { value: 'final', label: tr('Final', 'Final') },
+  ], [tr]);
 
   useEffect(() => {
     if (!user?.uid) {
@@ -93,11 +95,11 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
         uid: user?.uid,
         adminUid,
       });
-      setReadError('No se pudo leer /matches por permisos. Verifica login, projectId y databaseId en Vercel.');
+      setReadError(tr('No se pudo leer /matches por permisos. Verifica login, projectId y databaseId en Vercel.', 'Could not read /matches due to permissions. Check login, projectId and databaseId on Vercel.'));
     });
 
     return () => unsub();
-  }, [user?.uid, adminUid]);
+  }, [user?.uid, adminUid, tr]);
 
   const teamsByPot = useMemo(() => {
     return ['A', 'B', 'C', 'D'].map((pot) => ({
@@ -142,10 +144,10 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
       if (editingId === matchId) {
         resetForm();
       }
-      setStatusMessage('Resultado eliminado correctamente. (Result deleted successfully.)');
+      setStatusMessage(tr('Resultado eliminado correctamente.', 'Result deleted successfully.'));
     } catch (error) {
       console.error('Error deleting match:', error);
-      setErrorMessage('No se pudo eliminar el resultado. (Could not delete result.)');
+      setErrorMessage(tr('No se pudo eliminar el resultado.', 'Could not delete result.'));
     }
   };
 
@@ -155,7 +157,7 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
     setErrorMessage(null);
 
     if (formData.homeTeam === formData.awayTeam) {
-      setErrorMessage('Local y visitante deben ser distintos. (Home and away must be different teams.)');
+      setErrorMessage(tr('Local y visitante deben ser distintos.', 'Home and away must be different teams.'));
       return;
     }
 
@@ -175,7 +177,7 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
           ...payload,
           updatedAt: serverTimestamp(),
         });
-        setStatusMessage('Resultado actualizado correctamente. (Result updated successfully.)');
+        setStatusMessage(tr('Resultado actualizado correctamente.', 'Result updated successfully.'));
       } else {
         await addDoc(collection(db, 'matches'), {
           ...payload,
@@ -183,13 +185,13 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });
-        setStatusMessage('Resultado creado correctamente. (Result created successfully.)');
+        setStatusMessage(tr('Resultado creado correctamente.', 'Result created successfully.'));
       }
 
       resetForm();
     } catch (error) {
       console.error('Error saving match:', error);
-      setErrorMessage('Hubo un error guardando el resultado. (Error while saving result.)');
+      setErrorMessage(tr('Hubo un error guardando el resultado.', 'Error while saving result.'));
     } finally {
       setIsSaving(false);
     }
@@ -200,19 +202,27 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
     return found ? `${found.flag} ${found.name}` : teamId;
   };
 
+  const getStageLabel = (stage: Stage) => {
+    if (stage === 'groups') return tr('Grupos', 'Groups');
+    if (stage === 'round16') return tr('Octavos', 'Round of 16');
+    if (stage === 'quarters') return tr('Cuartos', 'Quarterfinals');
+    if (stage === 'semis') return tr('Semifinal', 'Semifinals');
+    return tr('Final', 'Final');
+  };
+
   return (
     <section className="border-4 border-black bg-white p-6 md:p-8">
       <div className="flex items-center justify-between gap-4 mb-6">
-        <h2 className="text-2xl md:text-3xl font-serif italic font-black uppercase">Resultados oficiales (Official results)</h2>
-        <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Solo admin (Admin only)</span>
+        <h2 className="text-2xl md:text-3xl font-serif italic font-black uppercase">{tr('Resultados oficiales', 'Official results')}</h2>
+        <span className="text-[10px] font-black uppercase tracking-widest opacity-60">{tr('Solo admin', 'Admin only')}</span>
       </div>
       <p className="mb-4 text-[10px] font-black uppercase tracking-widest opacity-60">
-        Sesion: {user?.uid || 'sin login'} // Admin esperado: {adminUid}
+        {tr('Sesion', 'Session')}: {user?.uid || tr('sin login', 'not logged in')} // {tr('Admin esperado', 'Expected admin')}: {adminUid}
       </p>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 border-2 border-black p-4 bg-[#F5F2ED]">
         <div>
-          <label className="block text-[10px] font-black uppercase tracking-widest mb-2">Local (Home)</label>
+          <label className="block text-[10px] font-black uppercase tracking-widest mb-2">{tr('Local', 'Home')}</label>
           <select
             name="homeTeam"
             value={formData.homeTeam}
@@ -220,7 +230,7 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
             className="w-full border-2 border-black p-3 text-sm font-black uppercase"
             required
           >
-            <option value="">Selecciona equipo (Select team)</option>
+            <option value="">{tr('Selecciona equipo', 'Select team')}</option>
             {teamsByPot.map((group) => (
               <optgroup key={group.pot} label={`Bombo ${group.pot}`}>
                 {group.teams.map((team) => (
@@ -232,7 +242,7 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
         </div>
 
         <div>
-          <label className="block text-[10px] font-black uppercase tracking-widest mb-2">Visitante (Away)</label>
+          <label className="block text-[10px] font-black uppercase tracking-widest mb-2">{tr('Visitante', 'Away')}</label>
           <select
             name="awayTeam"
             value={formData.awayTeam}
@@ -240,7 +250,7 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
             className="w-full border-2 border-black p-3 text-sm font-black uppercase"
             required
           >
-            <option value="">Selecciona equipo (Select team)</option>
+            <option value="">{tr('Selecciona equipo', 'Select team')}</option>
             {teamsByPot.map((group) => (
               <optgroup key={group.pot} label={`Bombo ${group.pot}`}>
                 {group.teams.map((team) => (
@@ -252,7 +262,7 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
         </div>
 
         <div>
-          <label className="block text-[10px] font-black uppercase tracking-widest mb-2">Goles local (Home goals)</label>
+          <label className="block text-[10px] font-black uppercase tracking-widest mb-2">{tr('Goles local', 'Home goals')}</label>
           <input
             type="number"
             min={0}
@@ -265,7 +275,7 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
         </div>
 
         <div>
-          <label className="block text-[10px] font-black uppercase tracking-widest mb-2">Goles visitante (Away goals)</label>
+          <label className="block text-[10px] font-black uppercase tracking-widest mb-2">{tr('Goles visitante', 'Away goals')}</label>
           <input
             type="number"
             min={0}
@@ -278,14 +288,14 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
         </div>
 
         <div>
-          <label className="block text-[10px] font-black uppercase tracking-widest mb-2">Fase (Stage)</label>
+          <label className="block text-[10px] font-black uppercase tracking-widest mb-2">{tr('Fase', 'Stage')}</label>
           <select
             name="stage"
             value={formData.stage}
             onChange={handleInputChange}
             className="w-full border-2 border-black p-3 text-sm font-black uppercase"
           >
-            {STAGE_OPTIONS.map((option) => (
+            {stageOptions.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
           </select>
@@ -300,7 +310,7 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
               formData.finished ? 'border-black bg-black text-white' : 'border-black bg-white text-black'
             ].join(' ')}
           >
-            {formData.finished ? 'Finalizado (Finished)' : 'Pendiente (Pending)'}
+            {formData.finished ? tr('Finalizado', 'Finished') : tr('Pendiente', 'Pending')}
           </button>
         </div>
 
@@ -310,7 +320,7 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
             disabled={isSaving}
             className="px-5 py-3 bg-black text-white text-xs font-black uppercase tracking-widest hover:bg-[#FF3E00] transition-colors disabled:opacity-50"
           >
-            {isSaving ? 'Guardando...' : editingId ? 'Guardar cambios (Save changes)' : 'Agregar resultado (Add result)'}
+            {isSaving ? tr('Guardando...', 'Saving...') : editingId ? tr('Guardar cambios', 'Save changes') : tr('Agregar resultado', 'Add result')}
           </button>
 
           {editingId && (
@@ -319,7 +329,7 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
               onClick={resetForm}
               className="px-5 py-3 border-2 border-black text-xs font-black uppercase tracking-widest hover:bg-black hover:text-white transition-colors"
             >
-              Cancelar edicion (Cancel edit)
+              {tr('Cancelar edicion', 'Cancel edit')}
             </button>
           )}
         </div>
@@ -334,17 +344,17 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
           <thead className="bg-black text-white text-[10px] font-black uppercase tracking-[0.2em]">
             <tr>
               <th className="px-4 py-3">Partido</th>
-              <th className="px-4 py-3">Fase</th>
-              <th className="px-4 py-3">Resultado</th>
-              <th className="px-4 py-3">Estado</th>
-              <th className="px-4 py-3 text-right">Acciones</th>
+              <th className="px-4 py-3">{tr('Fase', 'Stage')}</th>
+              <th className="px-4 py-3">{tr('Resultado', 'Result')}</th>
+              <th className="px-4 py-3">{tr('Estado', 'Status')}</th>
+              <th className="px-4 py-3 text-right">{tr('Acciones', 'Actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-black/10 bg-white">
             {matches.length === 0 ? (
               <tr>
                 <td className="px-4 py-4 text-xs font-black uppercase tracking-widest opacity-50" colSpan={5}>
-                  No hay resultados cargados aun. (No results yet.)
+                  {tr('No hay resultados cargados aun.', 'No results yet.')}
                 </td>
               </tr>
             ) : (
@@ -353,9 +363,9 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
                   <td className="px-4 py-3 text-xs font-black uppercase tracking-wider">
                     {getTeamLabel(match.homeTeam)} vs {getTeamLabel(match.awayTeam)}
                   </td>
-                  <td className="px-4 py-3 text-xs font-black uppercase tracking-wider">{STAGE_LABEL[match.stage]}</td>
+                  <td className="px-4 py-3 text-xs font-black uppercase tracking-wider">{getStageLabel(match.stage)}</td>
                   <td className="px-4 py-3 text-xs font-black uppercase tracking-wider">{match.homeGoals} - {match.awayGoals}</td>
-                  <td className="px-4 py-3 text-xs font-black uppercase tracking-wider">{match.finished ? 'Finalizado' : 'Pendiente'}</td>
+                  <td className="px-4 py-3 text-xs font-black uppercase tracking-wider">{match.finished ? tr('Finalizado', 'Finished') : tr('Pendiente', 'Pending')}</td>
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-2">
                       <button
@@ -363,14 +373,14 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
                         onClick={() => handleEdit(match)}
                         className="px-3 py-2 border-2 border-black text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-colors"
                       >
-                        Editar
+                        {tr('Editar', 'Edit')}
                       </button>
                       <button
                         type="button"
                         onClick={() => handleDelete(match.id)}
                         className="px-3 py-2 border-2 border-[#FF3E00] text-[#FF3E00] text-[10px] font-black uppercase tracking-widest hover:bg-[#FF3E00] hover:text-white transition-colors"
                       >
-                        Eliminar
+                        {tr('Eliminar', 'Delete')}
                       </button>
                     </div>
                   </td>

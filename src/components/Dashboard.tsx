@@ -7,6 +7,7 @@ import { MatchResult, getMatchPoints } from '../lib/results';
 import { motion } from 'motion/react';
 import { Trophy, Star, Users, LayoutGrid, Info, ShieldCheck } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { useLanguage } from '../lib/LanguageContext';
 
 interface LeagueData {
   id: string;
@@ -18,6 +19,7 @@ interface LeagueData {
 
 export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
   const { user } = useAuth();
+   const { tr } = useLanguage();
   const [picks, setPicks] = useState<Record<string, any>>({});
   const [users, setUsers] = useState<Record<string, any>>({});
    const [view, setView] = useState<'grid' | 'table'>('grid');
@@ -156,12 +158,12 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 sm:mb-12 pb-4 sm:pb-6 border-b-4 border-black gap-4">
            <div className="flex items-baseline gap-3 sm:gap-6">
               <h2 className="text-4xl sm:text-6xl font-serif font-black italic uppercase tracking-tighter">Mi Plantilla</h2>
-              <p className="text-xs font-black uppercase tracking-[0.4em] opacity-40 hidden sm:block">Asset Selection // Confirmed</p>
+              <p className="text-xs font-black uppercase tracking-[0.4em] opacity-40 hidden sm:block">{tr('Seleccion confirmada', 'Confirmed selection')}</p>
            </div>
            
            {!myPicks?.tapadoId && myTeams.length === 4 && (
              <div className="bg-[#FF3E00] text-white px-4 py-2 text-[10px] font-black uppercase tracking-widest animate-pulse">
-                        Seleccion pendiente: marca tu tapado (Selection pending: mark wildcard) ⭐
+                        {tr('Seleccion pendiente: marca tu tapado', 'Selection pending: mark your wildcard')} ⭐
              </div>
            )}
         </div>
@@ -182,19 +184,19 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                </div>
 
                <div className="text-6xl mb-8 group-hover:scale-110 transition-transform origin-left">{team.flag}</div>
-               <span className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1 block">Nivel nacional (National tier)</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1 block">{tr('Nivel nacional', 'National tier')}</span>
                <h3 className="text-3xl sm:text-4xl font-serif italic font-black uppercase mb-8 leading-none wrap-break-word">{team.name}</h3>
                
                <div className="mt-auto pt-6 border-t-2 border-black/10">
                  <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest mb-4">
-                    <span className="opacity-40">Puntos acumulados (Accrued points)</span>
+                              <span className="opacity-40">{tr('Puntos acumulados', 'Accrued points')}</span>
                     <span className={cn(myPicks?.tapadoId === team.id ? "text-[#FF3E00]" : "text-black")}>{calcTeamPoints(team.id, myPicks?.tapadoId)}</span>
                  </div>
                  
                  {myPicks?.tapadoId === team.id ? (
                    <div className="flex items-center gap-2 text-[#FF3E00] font-black text-[10px] uppercase tracking-widest bg-white/10 p-2 border border-white/20">
                       <Star className="w-4 h-4 fill-current" />
-                                 <span>El tapado (Wildcard)</span>
+                                                 <span>{tr('El tapado', 'Wildcard')}</span>
                    </div>
                  ) : (
                    <button 
@@ -207,7 +209,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                         : "hover:bg-[#FF3E00] hover:text-white"
                      )}
                    >
-                               Asignar tapado (Assign wildcard)
+                                              {tr('Asignar tapado', 'Assign wildcard')}
                    </button>
                  )}
                </div>
@@ -225,7 +227,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                 <div className="w-12 h-12 border-2 border-black/20 flex items-center justify-center">
                    <Users className="w-6 h-6 opacity-20" />
                 </div>
-                        <p className="text-[10px] font-black uppercase tracking-widest opacity-20">Espacio pendiente // Finaliza tu seleccion (Slot pending)</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest opacity-20">{tr('Espacio pendiente // Finaliza tu seleccion', 'Pending slot // Finish your selection')}</p>
              </div>
            ))}
         </div>
@@ -236,7 +238,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
          <div className="flex items-center justify-between mb-6 sm:mb-8 pb-4 border-b-2 border-black/10 gap-4">
             <h2 className="text-2xl sm:text-3xl font-serif italic font-black uppercase flex items-center gap-3 sm:gap-4">
                <span className="bg-black text-white w-10 h-10 flex items-center justify-center not-italic font-sans text-xl">L</span>
-               Clasificacion (Leaderboard)
+               {tr('Clasificacion', 'Leaderboard')}
             </h2>
             <div className="flex border-2 border-black bg-white overflow-hidden">
                <button 
@@ -257,7 +259,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
              {hideOpponentTeams && (
                 <div className="mb-6 border-2 border-black bg-[#F5F2ED] p-4">
                    <p className="text-[10px] font-black uppercase tracking-widest opacity-70">
-                      Modo picks ocultos activo: se revelaran cuando todos completen su seleccion ({participantsReadyCount}/{league.participants.length}).
+                      {tr('Modo picks ocultos activo: se revelaran cuando todos completen su seleccion', 'Hidden picks mode is active: picks will be revealed when everyone completes their selection')} ({participantsReadyCount}/{league.participants.length}).
                    </p>
                 </div>
              )}
@@ -291,7 +293,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                           <h4 className="font-serif italic text-xl sm:text-2xl leading-none wrap-break-word">
                              {users[uid]?.displayName}
                           </h4>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{entry.points} PUNTOS (POINTS)</p>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{entry.points} {tr('PUNTOS', 'POINTS')}</p>
                        </div>
                     </div>
 
@@ -312,7 +314,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                                      </>
                                   ) : (
                                      <div className="w-full h-12 border-2 border-dashed border-black/20 bg-black/5 flex items-center justify-center text-[10px] font-black uppercase tracking-widest opacity-50">
-                                        Picks ocultos
+                                        {tr('Picks ocultos', 'Hidden picks')}
                                      </div>
                                   )}
                     </div>
@@ -325,13 +327,13 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
               <table className="w-full min-w-215 text-left font-sans">
                  <thead>
                     <tr className="bg-black text-white text-[10px] font-black uppercase tracking-[0.2em]">
-                       <th className="px-8 py-4">Posicion (Rank)</th>
-                       <th className="px-8 py-4">Jugador (Player)</th>
-                       <th className="px-8 py-4">Bombo (Tier) A</th>
-                       <th className="px-8 py-4">Bombo (Tier) B</th>
-                       <th className="px-8 py-4">Bombo (Tier) C</th>
-                       <th className="px-8 py-4">Bombo (Tier) D</th>
-                       <th className="px-8 py-4 text-right">Total (Aggregate)</th>
+                       <th className="px-8 py-4">{tr('Posicion', 'Rank')}</th>
+                       <th className="px-8 py-4">{tr('Jugador', 'Player')}</th>
+                       <th className="px-8 py-4">{tr('Bombo', 'Pot')} A</th>
+                       <th className="px-8 py-4">{tr('Bombo', 'Pot')} B</th>
+                       <th className="px-8 py-4">{tr('Bombo', 'Pot')} C</th>
+                       <th className="px-8 py-4">{tr('Bombo', 'Pot')} D</th>
+                       <th className="px-8 py-4 text-right">{tr('Total', 'Total')}</th>
                     </tr>
                  </thead>
                  <tbody className="divide-y-2 divide-black/10">
@@ -393,27 +395,27 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
       <div className="bg-black text-white p-6 sm:p-12 border-l-8 sm:border-l-16 border-[#FF3E00] flex flex-col md:flex-row items-start md:items-center gap-6 sm:gap-12 relative overflow-hidden">
          <div className="absolute top-0 right-0 opacity-5 text-9xl font-serif font-black italic select-none">RULES</div>
          <div className="flex-1 relative z-10">
-            <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.22em] sm:tracking-[0.5em] mb-4 sm:mb-6 opacity-60">Matriz de puntuacion (Scoring matrix) // Edicion 2026</h3>
+            <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.22em] sm:tracking-[0.5em] mb-4 sm:mb-6 opacity-60">{tr('Matriz de puntuacion // Edicion 2026', 'Scoring matrix // 2026 edition')}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 sm:gap-12">
                <div>
-                  <p className="font-serif italic text-xl sm:text-2xl mb-2 underline decoration-[#FF3E00]">Fase de grupos (Groups)</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Victoria (Win): 3 pts</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Empate (Draw): 1 pt</p>
+                  <p className="font-serif italic text-xl sm:text-2xl mb-2 underline decoration-[#FF3E00]">{tr('Fase de grupos', 'Groups')}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">{tr('Victoria: 3 pts', 'Win: 3 pts')}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">{tr('Empate: 1 pt', 'Draw: 1 pt')}</p>
                </div>
                <div>
-                  <p className="font-serif italic text-xl sm:text-2xl mb-2 underline decoration-[#FF3E00]">Eliminatorias (Knockout)</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Octavos (Round of 16): +4 pts</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Cuartos (Quarterfinals): +6 pts</p>
+                  <p className="font-serif italic text-xl sm:text-2xl mb-2 underline decoration-[#FF3E00]">{tr('Eliminatorias', 'Knockout')}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">{tr('Octavos: +4 pts', 'Round of 16: +4 pts')}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">{tr('Cuartos: +6 pts', 'Quarterfinals: +6 pts')}</p>
                </div>
                <div>
-                  <p className="font-serif italic text-xl sm:text-2xl mb-2 underline decoration-[#FF3E00]">Fase final (Final rounds)</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Semifinal (Semis): +8 pts</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Final (Final): +10 pts</p>
+                  <p className="font-serif italic text-xl sm:text-2xl mb-2 underline decoration-[#FF3E00]">{tr('Fase final', 'Final rounds')}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">{tr('Semifinal: +8 pts', 'Semis: +8 pts')}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">{tr('Final: +10 pts', 'Final: +10 pts')}</p>
                </div>
                <div>
-                  <p className="font-serif italic text-xl sm:text-2xl mb-2 text-[#FF3E00]">El tapado (Wildcard)</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">Duplica puntos (Double pts) en eliminatorias</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">Penalizacion de -5 pts si queda fuera</p>
+                  <p className="font-serif italic text-xl sm:text-2xl mb-2 text-[#FF3E00]">{tr('El tapado', 'Wildcard')}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{tr('Duplica puntos en eliminatorias', 'Double points in knockouts')}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{tr('Penalizacion de -5 pts si queda fuera', 'Penalty of -5 pts if eliminated')}</p>
                </div>
             </div>
          </div>

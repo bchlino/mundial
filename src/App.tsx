@@ -14,6 +14,7 @@ import { arrayUnion, collection, doc, onSnapshot, query, serverTimestamp, setDoc
 import { motion, AnimatePresence } from 'motion/react';
 import ResultsAdmin from './components/ResultsAdmin.tsx';
 import JoinRequestsAdmin from './components/JoinRequestsAdmin.tsx';
+import { LanguageProvider, useLanguage } from './lib/LanguageContext';
 
 interface LeagueData {
   id: string;
@@ -25,6 +26,7 @@ interface LeagueData {
 
 function AppContent() {
   const { user, profile, loading } = useAuth();
+  const { tr } = useLanguage();
   const urlLeagueId = new URLSearchParams(window.location.search).get('league');
   const [leagues, setLeagues] = useState<LeagueData[]>([]);
   const [selectedLeagueId, setSelectedLeagueId] = useState<string | null>(null);
@@ -155,10 +157,10 @@ function AppContent() {
           }, { merge: true });
 
           setInviteRequestSent(true);
-          setInviteError('No se pudo unir automaticamente. Enviamos tu solicitud al admin de esta liga.');
+          setInviteError(tr('No se pudo unir automaticamente. Enviamos tu solicitud al admin de esta liga.', 'Could not join automatically. Your request was sent to this league admin.'));
         } catch (requestError) {
           console.error('Error creating join request:', requestError);
-          setInviteError('No se pudo unir a la liga del enlace ni enviar solicitud. Verifica que la invitacion sea valida.');
+          setInviteError(tr('No se pudo unir a la liga del enlace ni enviar solicitud. Verifica que la invitacion sea valida.', 'Could not join the league from this link or send a request. Verify the invite is valid.'));
         }
       } finally {
         setIsJoiningInviteLeague(false);
@@ -167,7 +169,7 @@ function AppContent() {
     };
 
     joinInviteLeague();
-  }, [user, profile, urlLeagueId, leaguesLoading, leagues, hasProcessedInvite, loading]);
+  }, [user, profile, urlLeagueId, leaguesLoading, leagues, hasProcessedInvite, loading, tr]);
 
   useEffect(() => {
     if (loading) return;
@@ -231,10 +233,15 @@ function AppContent() {
       setNewLeagueName('');
       setSelectedLeagueId(leagueRef.id);
       setShowCreateLeagueForm(false);
-      setAdminNotice(`Nueva liga creada: ${trimmedLeagueName}. Ahora eres admin de ${adminLeaguesCount + 1} liga(s).`);
+      setAdminNotice(
+        tr(
+          `Nueva liga creada: ${trimmedLeagueName}. Ahora eres admin de ${adminLeaguesCount + 1} liga(s).`,
+          `New league created: ${trimmedLeagueName}. You now admin ${adminLeaguesCount + 1} league(s).`
+        )
+      );
     } catch (error) {
       console.error('Error creating league:', error);
-      setCreateError('No se pudo crear la liga. Intentalo nuevamente.');
+      setCreateError(tr('No se pudo crear la liga. Intentalo nuevamente.', 'Could not create the league. Please try again.'));
     } finally {
       setIsCreatingLeague(false);
     }
@@ -263,22 +270,25 @@ function AppContent() {
       const diff = adminLeaguesCount - previousAdminLeaguesCount;
       setAdminNotice(
         diff === 1
-          ? 'Aviso admin: se detecto 1 nueva liga en tu panel.'
-          : `Aviso admin: se detectaron ${diff} nuevas ligas en tu panel.`
+          ? tr('Aviso admin: se detecto 1 nueva liga en tu panel.', 'Admin notice: 1 new league was detected in your panel.')
+          : tr(
+              `Aviso admin: se detectaron ${diff} nuevas ligas en tu panel.`,
+              `Admin notice: ${diff} new leagues were detected in your panel.`
+            )
       );
     }
 
     if (adminLeaguesCount !== previousAdminLeaguesCount) {
       setPreviousAdminLeaguesCount(adminLeaguesCount);
     }
-  }, [user, leaguesLoading, adminLeaguesCount, previousAdminLeaguesCount]);
+  }, [user, leaguesLoading, adminLeaguesCount, previousAdminLeaguesCount, tr]);
 
   if (loading || leaguesLoading || picksLoading) {
     return (
       <div className="min-h-screen bg-[#F5F2ED] flex items-center justify-center">
         <div className="flex flex-col items-center gap-6">
           <div className="w-24 h-24 border-8 border-black border-t-[#FF3E00] animate-spin shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]" />
-          <p className="text-black font-black uppercase tracking-[0.4em] animate-pulse">Sincronizando matriz (Syncing matrix)...</p>
+          <p className="text-black font-black uppercase tracking-[0.4em] animate-pulse">{tr('Sincronizando matriz...', 'Syncing matrix...')}</p>
         </div>
       </div>
     );
@@ -299,14 +309,14 @@ function AppContent() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {currentLeague && (
           <div className="mb-6 border-2 border-black bg-white p-4 sm:p-5">
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] opacity-60">Liga actual (Current league)</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.25em] opacity-60">{tr('Liga actual', 'Current league')}</p>
             <h2 className="mt-2 text-xl sm:text-2xl font-black uppercase tracking-wide">{currentLeague.name || currentLeague.id}</h2>
           </div>
         )}
 
         {rulesDiag && (
           <div className="mb-6 border-2 border-[#FF3E00] bg-[#FFF1EC] p-4">
-            <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">Diagnostico de reglas (Rules diagnostics)</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{tr('Diagnostico de reglas', 'Rules diagnostics')}</p>
             <p className="mt-2 text-xs font-black uppercase tracking-widest">{rulesDiag}</p>
           </div>
         )}
@@ -319,7 +329,7 @@ function AppContent() {
               onClick={() => setAdminNotice(null)}
               className="border-2 border-black px-3 py-1 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-colors"
             >
-              Cerrar
+              {tr('Cerrar', 'Close')}
             </button>
           </div>
         )}
@@ -327,9 +337,9 @@ function AppContent() {
         <div className="mb-10 border-4 border-black bg-white p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-2">Crear liga privada (Create private league)</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-2">{tr('Crear liga privada', 'Create private league')}</p>
               <p className="text-xs font-black uppercase tracking-widest opacity-60">
-                Ligas administradas (Admin leagues): {adminLeaguesCount}
+                {tr('Ligas administradas', 'Admin leagues')}: {adminLeaguesCount}
               </p>
             </div>
             <button
@@ -340,7 +350,7 @@ function AppContent() {
               }}
               className="border-2 border-black px-4 py-2 text-[10px] sm:text-xs font-black uppercase tracking-widest hover:bg-black hover:text-white transition-colors"
             >
-              {showCreateLeagueForm ? 'Ocultar formulario' : 'Nueva liga'}
+              {showCreateLeagueForm ? tr('Ocultar formulario', 'Hide form') : tr('Nueva liga', 'New league')}
             </button>
           </div>
 
@@ -358,7 +368,7 @@ function AppContent() {
                 disabled={isCreatingLeague || !newLeagueName.trim()}
                 className="bg-black text-white px-6 py-4 text-sm font-black uppercase tracking-widest hover:bg-[#FF3E00] transition-all disabled:opacity-50"
               >
-                {isCreatingLeague ? 'Creando liga (Creating league)...' : 'Crear liga (Create league)'}
+                {isCreatingLeague ? tr('Creando liga...', 'Creating league...') : tr('Crear liga', 'Create league')}
               </button>
             </div>
           )}
@@ -370,7 +380,7 @@ function AppContent() {
 
         {leagues.length > 1 && (
           <div className="mb-10 border-4 border-black bg-white p-6">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-4">Selecciona tu liga (Select your league)</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-4">{tr('Selecciona tu liga', 'Select your league')}</p>
             <div className="flex flex-wrap gap-3">
               {leagues.map((league) => (
                 <button
@@ -411,30 +421,30 @@ function AppContent() {
                exit={{ opacity: 0, y: -20 }}
              >
                <div className="max-w-2xl mx-auto text-center mt-20 p-12 border-8 border-black bg-white shadow-[16px_16px_0px_0px_rgba(0,0,0,1)]">
-                 <h2 className="text-4xl font-serif font-black italic uppercase mb-6 leading-none">Sin liga asignada (No league assigned)</h2>
-                 <p className="text-xs font-black uppercase tracking-widest opacity-60 mb-8">Esta cuenta de Google aun no pertenece a una liga (This Google account is not part of any league yet).</p>
+                 <h2 className="text-4xl font-serif font-black italic uppercase mb-6 leading-none">{tr('Sin liga asignada', 'No league assigned')}</h2>
+                 <p className="text-xs font-black uppercase tracking-widest opacity-60 mb-8">{tr('Esta cuenta de Google aun no pertenece a una liga.', 'This Google account is not part of any league yet.')}</p>
 
                  {urlLeagueId && !hasProcessedInvite && (
                    <div className="mb-8 p-4 border-2 border-black bg-[#F5F2ED] text-left">
-                     <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-3">Invitacion detectada (Invitation detected)</p>
-                     <p className="text-xs font-black uppercase tracking-widest">Uniendote a la liga desde el enlace (Joining league from link)...</p>
+                     <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-3">{tr('Invitacion detectada', 'Invitation detected')}</p>
+                     <p className="text-xs font-black uppercase tracking-widest">{tr('Uniendote a la liga desde el enlace...', 'Joining league from link...')}</p>
                    </div>
                  )}
 
                  {urlLeagueId && hasProcessedInvite && inviteError && (
                    <div className="mb-8 p-4 border-2 border-[#FF3E00] bg-[#FFF1EC] text-left">
-                     <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00] mb-2">Error de invitacion (Invite error)</p>
+                     <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00] mb-2">{tr('Error de invitacion', 'Invite error')}</p>
                      <p className="text-xs font-black uppercase tracking-widest">{inviteError}</p>
                    </div>
                  )}
                  {inviteRequestSent && (
                    <div className="mb-8 p-4 border-2 border-black bg-[#F5F2ED] text-left">
-                     <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2">Solicitud enviada (Request sent)</p>
-                     <p className="text-xs font-black uppercase tracking-widest">El admin debe aprobar tu acceso para entrar a esta liga (Admin approval is required).</p>
+                     <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2">{tr('Solicitud enviada', 'Request sent')}</p>
+                     <p className="text-xs font-black uppercase tracking-widest">{tr('El admin debe aprobar tu acceso para entrar a esta liga.', 'Admin approval is required to join this league.')}</p>
                    </div>
                  )}
                  <p className="text-[10px] font-black uppercase tracking-widest opacity-60">
-                   Usa el formulario superior para crear una liga privada (Use the create form above to start a new private league).
+                   {tr('Usa el formulario superior para crear una liga privada.', 'Use the create form above to start a new private league.')}
                  </p>
                </div>
              </motion.div>
@@ -451,9 +461,11 @@ function AppContent() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </LanguageProvider>
   );
 }
 

@@ -6,6 +6,7 @@ import { WORLD_CUP_TEAMS, Team } from '../lib/teams';
 import { motion, AnimatePresence } from 'motion/react';
 import { Info, CheckCircle2, ChevronRight, Trophy } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { useLanguage } from '../lib/LanguageContext';
 
 interface LeagueData {
   id: string;
@@ -14,6 +15,7 @@ interface LeagueData {
 
 export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
   const { user } = useAuth();
+  const { tr } = useLanguage();
   const [currentPot, setCurrentPot] = useState<'A' | 'B' | 'C' | 'D'>('A');
   const [selections, setSelections] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,14 +80,14 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 sm:gap-8 border-b-8 border-black pb-6 sm:pb-8">
         <div>
           <span className="inline-block px-3 py-1 bg-[#FF3E00] text-white text-[10px] font-black uppercase tracking-widest mb-6 -translate-y-1">
-            Fase 01 // Seleccion de plantilla (Personnel selection)
+            {tr('Fase 01 // Seleccion de plantilla', 'Phase 01 // Team selection')}
           </span>
           <h2 className="text-4xl sm:text-8xl font-serif font-black italic uppercase tracking-tighter leading-none">
-            Elegir <span className="text-[#FF3E00]">Plantilla</span>
+            {tr('Elegir', 'Pick')} <span className="text-[#FF3E00]">{tr('Plantilla', 'Squad')}</span>
           </h2>
         </div>
         <div className="text-left md:text-right">
-           <p className="text-xs font-black uppercase tracking-[0.3em] opacity-40 mb-2">Estado general (Aggregate status)</p>
+           <p className="text-xs font-black uppercase tracking-[0.3em] opacity-40 mb-2">{tr('Estado general', 'Overall status')}</p>
            <div className="flex gap-2 justify-start md:justify-end">
               {pots.map(p => (
                 <div 
@@ -114,12 +116,12 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
                 : "bg-white text-black hover:bg-[#F5F2ED] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none translate-x-0 active:translate-x-1 active:translate-y-1"
             )}
           >
-            <span>Bombo (Tier) {p}</span>
+            <span>{tr('Bombo', 'Pot')} {p}</span>
             <span className="font-serif italic text-lg sm:text-2xl normal-case leading-tight">
-              {selections[p] ? WORLD_CUP_TEAMS.find(t => t.id === selections[p])?.name : 'Espacio vacio (Empty slot)'}
+              {selections[p] ? WORLD_CUP_TEAMS.find(t => t.id === selections[p])?.name : tr('Espacio vacio', 'Empty slot')}
             </span>
             <span className="text-[10px] tracking-wider uppercase opacity-70">
-              {selections[p] ? 'Completado (Completed)' : 'Pendiente (Pending)'}
+              {selections[p] ? tr('Completado', 'Completed') : tr('Pendiente', 'Pending')}
             </span>
             {currentPot === p && (
               <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-[#FF3E00] rotate-45" />
@@ -131,9 +133,9 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
       <div className="border-4 border-black bg-white p-5 sm:p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Progreso de seleccion (Selection progress)</p>
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-60">{tr('Progreso de seleccion', 'Selection progress')}</p>
             <p className="text-sm sm:text-base font-bold mt-1">
-              {Object.keys(selections).length}/4 bombos completados. {remainingPots.length > 0 ? `Falta: ${remainingPots.join(', ')}` : 'Plantilla lista para confirmar.'}
+              {Object.keys(selections).length}/4 {tr('bombos completados.', 'pots completed.')} {remainingPots.length > 0 ? `${tr('Falta', 'Missing')}: ${remainingPots.join(', ')}` : tr('Plantilla lista para confirmar.', 'Squad ready to confirm.')}
             </p>
           </div>
           {nextPendingPot && (
@@ -142,7 +144,7 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
               onClick={() => setCurrentPot(nextPendingPot)}
               className="border-2 border-black px-4 py-2 text-xs font-black uppercase tracking-wider hover:bg-black hover:text-white transition-colors"
             >
-              Ir al siguiente pendiente: {nextPendingPot}
+              {tr('Ir al siguiente pendiente', 'Go to next pending')}: {nextPendingPot}
             </button>
           )}
         </div>
@@ -168,7 +170,7 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
             >
               <div className="flex-1 mt-6">
                 <div className="text-4xl sm:text-5xl mb-4 sm:mb-6">{team.flag}</div>
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1 block">Nivel nacional (National tier)</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1 block">{tr('Nivel nacional', 'National tier')}</span>
                 <h4 className="font-serif italic text-3xl sm:text-4xl font-black uppercase leading-tight wrap-break-word">{team.name}</h4>
               </div>
               
@@ -184,7 +186,7 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
                 </div>
               </div>
               <p className="mt-3 text-[10px] font-black uppercase tracking-widest opacity-70">
-                {isSelected ? 'Seleccionado para este bombo' : 'Click para seleccionar'}
+                {isSelected ? tr('Seleccionado para este bombo', 'Selected for this pot') : tr('Click para seleccionar', 'Click to select')}
               </p>
             </motion.button>
           );
@@ -203,7 +205,7 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
               disabled={isSubmitting}
               className="w-full max-w-xl bg-black text-white px-5 sm:px-12 py-4 sm:py-8 text-base sm:text-3xl font-serif italic font-black uppercase tracking-tight sm:tracking-tighter border-4 sm:border-8 border-white shadow-[12px_12px_0px_0px_rgba(255,62,0,1)] sm:shadow-[24px_24px_0px_0px_rgba(255,62,0,1)] hover:bg-[#FF3E00] transition-all flex items-center justify-center gap-3 sm:gap-8 group"
             >
-              {isSubmitting ? 'Sincronizando (Syncing)...' : 'Confirmar selecciones (Confirm matrix selections)'}
+              {isSubmitting ? tr('Sincronizando...', 'Syncing...') : tr('Confirmar selecciones', 'Confirm selections')}
               <Trophy className="w-6 h-6 sm:w-10 sm:h-10 group-hover:rotate-12 transition-transform" />
             </button>
           </motion.div>
