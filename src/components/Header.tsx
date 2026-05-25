@@ -37,10 +37,10 @@ export const Header: React.FC<HeaderProps> = ({ activeLeagueId }) => {
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-5 sm:py-8 flex flex-col sm:flex-row items-start sm:items-baseline justify-between gap-4">
         <div className="min-w-0 w-full sm:w-auto">
           <h1 className="text-4xl sm:text-7xl font-black tracking-tighter leading-none italic uppercase font-serif wrap-break-word">
-            Mundial <span className="text-[#FF3E00]">Draft</span>
+            Porra <span className="text-[#FF3E00]">Mundial</span>
           </h1>
           <p className="text-[9px] sm:text-[10px] tracking-[0.18em] sm:tracking-[0.3em] font-black mt-2 uppercase opacity-60 font-sans">
-            Liga Privada (Private League) // Temporada (Season) 2026
+            Liga Privada
           </p>
         </div>
 

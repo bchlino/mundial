@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../lib/AuthContext';
 import { db, OperationType, handleFirestoreError } from '../lib/firebase';
 import { doc, onSnapshot, collection, getDoc, updateDoc } from 'firebase/firestore';
@@ -119,6 +119,25 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
       return userPicks.teamIds.reduce((acc: number, tid: string) => acc + calcTeamPoints(tid, userPicks.tapadoId), 0);
    }
 
+   const leaderboard = useMemo(() => {
+      return [...league.participants]
+         .map((uid) => ({
+            uid,
+            points: calcUserPoints(uid),
+            displayName: users[uid]?.displayName || 'Jugador Anonimo',
+         }))
+         .sort((a, b) => {
+            if (b.points !== a.points) return b.points - a.points;
+            return String(a.displayName).localeCompare(String(b.displayName));
+         });
+   }, [league.participants, picks, users, results]);
+
+   const participantsReadyCount = useMemo(() => {
+      return league.participants.filter((uid) => (picks[uid]?.teamIds || []).length === 4).length;
+   }, [league.participants, picks]);
+
+   const hideOpponentTeams = participantsReadyCount < league.participants.length;
+
   const handleSetTapado = async (teamId: string) => {
     if (!user) return;
     try {
@@ -235,12 +254,24 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
             </div>
          </div>
 
+             {hideOpponentTeams && (
+                <div className="mb-6 border-2 border-black bg-[#F5F2ED] p-4">
+                   <p className="text-[10px] font-black uppercase tracking-widest opacity-70">
+                      Modo picks ocultos activo: se revelaran cuando todos completen su seleccion ({participantsReadyCount}/{league.participants.length}).
+                   </p>
+                </div>
+             )}
+
          {view === 'grid' ? (
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
-              {league.participants.map((uid, idx) => {
+                     {leaderboard.map((entry, idx) => {
+                        const uid = entry.uid;
                 const userPicks = picks[uid];
-                const teams = WORLD_CUP_TEAMS.filter(t => userPicks?.teamIds?.includes(t.id));
                 const isMe = uid === user?.uid;
+                        const canViewTeams = isMe || !hideOpponentTeams;
+                        const teams = canViewTeams
+                           ? WORLD_CUP_TEAMS.filter(t => userPicks?.teamIds?.includes(t.id))
+                           : [];
 
                 return (
                   <motion.div 
@@ -260,22 +291,30 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                           <h4 className="font-serif italic text-xl sm:text-2xl leading-none wrap-break-word">
                              {users[uid]?.displayName}
                           </h4>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{calcUserPoints(uid)} PUNTOS (POINTS)</p>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{entry.points} PUNTOS (POINTS)</p>
                        </div>
                     </div>
 
                     <div className="flex gap-3">
-                       {teams.map(t => (
-                         <div key={t.id} className="relative group cursor-help border-2 border-black p-2 bg-[#F5F2ED] flex-1 flex items-center justify-center">
-                            <span className="text-3xl transition-all">{t.flag}</span>
-                            {userPicks?.tapadoId === t.id && (
-                              <Star className="absolute -top-2 -right-2 w-4 h-4 text-[#FF3E00] fill-current" />
-                            )}
-                         </div>
-                       ))}
-                       {Array.from({ length: 4 - teams.length }).map((_, i) => (
-                         <div key={i} className="flex-1 h-12 bg-black/5 border-2 border-dashed border-black/10" />
-                       ))}
+                                  {canViewTeams ? (
+                                     <>
+                                        {teams.map(t => (
+                                           <div key={t.id} className="relative group cursor-help border-2 border-black p-2 bg-[#F5F2ED] flex-1 flex items-center justify-center">
+                                                <span className="text-3xl transition-all">{t.flag}</span>
+                                                {isMe && userPicks?.tapadoId === t.id && (
+                                                   <Star className="absolute -top-2 -right-2 w-4 h-4 text-[#FF3E00] fill-current" />
+                                                )}
+                                           </div>
+                                        ))}
+                                        {Array.from({ length: 4 - teams.length }).map((_, i) => (
+                                           <div key={i} className="flex-1 h-12 bg-black/5 border-2 border-dashed border-black/10" />
+                                        ))}
+                                     </>
+                                  ) : (
+                                     <div className="w-full h-12 border-2 border-dashed border-black/20 bg-black/5 flex items-center justify-center text-[10px] font-black uppercase tracking-widest opacity-50">
+                                        Picks ocultos
+                                     </div>
+                                  )}
                     </div>
                   </motion.div>
                 );
@@ -296,8 +335,10 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                     </tr>
                  </thead>
                  <tbody className="divide-y-2 divide-black/10">
-                    {league.participants.map((uid, idx) => {
+                              {leaderboard.map((entry, idx) => {
+                                 const uid = entry.uid;
                       const userPicks = picks[uid];
+                                 const isMe = uid === user?.uid;
                       const tA = WORLD_CUP_TEAMS.find(t => t.pot === 'A' && userPicks?.teamIds?.includes(t.id));
                       const tB = WORLD_CUP_TEAMS.find(t => t.pot === 'B' && userPicks?.teamIds?.includes(t.id));
                       const tC = WORLD_CUP_TEAMS.find(t => t.pot === 'C' && userPicks?.teamIds?.includes(t.id));
@@ -314,30 +355,30 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                            </td>
                            <td className="px-8 py-6">
                               <div className="flex items-center gap-2">
-                                 <span className="text-3xl">{tA?.flag || '—'}</span>
-                                 {userPicks?.tapadoId === tA?.id && <Star className="w-4 h-4 text-[#FF3E00] fill-current" />}
+                                 <span className="text-3xl">{isMe || !hideOpponentTeams ? (tA?.flag || '—') : '🔒'}</span>
+                                 {isMe && userPicks?.tapadoId === tA?.id && <Star className="w-4 h-4 text-[#FF3E00] fill-current" />}
                               </div>
                            </td>
                            <td className="px-8 py-6">
                               <div className="flex items-center gap-2">
-                                 <span className="text-3xl">{tB?.flag || '—'}</span>
-                                 {userPicks?.tapadoId === tB?.id && <Star className="w-4 h-4 text-[#FF3E00] fill-current" />}
+                                 <span className="text-3xl">{isMe || !hideOpponentTeams ? (tB?.flag || '—') : '🔒'}</span>
+                                 {isMe && userPicks?.tapadoId === tB?.id && <Star className="w-4 h-4 text-[#FF3E00] fill-current" />}
                               </div>
                            </td>
                            <td className="px-8 py-6">
                               <div className="flex items-center gap-2">
-                                 <span className="text-3xl">{tC?.flag || '—'}</span>
-                                 {userPicks?.tapadoId === tC?.id && <Star className="w-4 h-4 text-[#FF3E00] fill-current" />}
+                                 <span className="text-3xl">{isMe || !hideOpponentTeams ? (tC?.flag || '—') : '🔒'}</span>
+                                 {isMe && userPicks?.tapadoId === tC?.id && <Star className="w-4 h-4 text-[#FF3E00] fill-current" />}
                               </div>
                            </td>
                            <td className="px-8 py-6">
                               <div className="flex items-center gap-2">
-                                 <span className="text-3xl">{tD?.flag || '—'}</span>
-                                 {userPicks?.tapadoId === tD?.id && <Star className="w-4 h-4 text-[#FF3E00] fill-current" />}
+                                 <span className="text-3xl">{isMe || !hideOpponentTeams ? (tD?.flag || '—') : '🔒'}</span>
+                                 {isMe && userPicks?.tapadoId === tD?.id && <Star className="w-4 h-4 text-[#FF3E00] fill-current" />}
                               </div>
                            </td>
                            <td className="px-8 py-6 text-right">
-                              <span className="font-serif italic font-black text-[#FF3E00] text-3xl">{calcUserPoints(uid)}</span>
+                              <span className="font-serif italic font-black text-[#FF3E00] text-3xl">{entry.points}</span>
                            </td>
                         </tr>
                       );

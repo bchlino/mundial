@@ -32,8 +32,11 @@ function AppContent() {
   const [leaguesLoading, setLeaguesLoading] = useState(true);
   const [picksLoading, setPicksLoading] = useState(true);
   const [newLeagueName, setNewLeagueName] = useState('');
+  const [showCreateLeagueForm, setShowCreateLeagueForm] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [isCreatingLeague, setIsCreatingLeague] = useState(false);
+  const [adminNotice, setAdminNotice] = useState<string | null>(null);
+  const [previousAdminLeaguesCount, setPreviousAdminLeaguesCount] = useState<number | null>(null);
   const [isJoiningInviteLeague, setIsJoiningInviteLeague] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [inviteRequestSent, setInviteRequestSent] = useState(false);
@@ -227,6 +230,8 @@ function AppContent() {
 
       setNewLeagueName('');
       setSelectedLeagueId(leagueRef.id);
+      setShowCreateLeagueForm(false);
+      setAdminNotice(`Nueva liga creada: ${trimmedLeagueName}. Ahora eres admin de ${adminLeaguesCount + 1} liga(s).`);
     } catch (error) {
       console.error('Error creating league:', error);
       setCreateError('No se pudo crear la liga. Intentalo nuevamente.');
@@ -237,6 +242,36 @@ function AppContent() {
 
   const currentLeague = leagues.find((league: LeagueData) => league.id === selectedLeagueId) || null;
   const adminLeaguesCount = leagues.filter((league: LeagueData) => league.adminId === user?.uid).length;
+
+  useEffect(() => {
+    if (!user) {
+      setPreviousAdminLeaguesCount(null);
+      setAdminNotice(null);
+      return;
+    }
+
+    if (leaguesLoading) {
+      return;
+    }
+
+    if (previousAdminLeaguesCount === null) {
+      setPreviousAdminLeaguesCount(adminLeaguesCount);
+      return;
+    }
+
+    if (adminLeaguesCount > previousAdminLeaguesCount) {
+      const diff = adminLeaguesCount - previousAdminLeaguesCount;
+      setAdminNotice(
+        diff === 1
+          ? 'Aviso admin: se detecto 1 nueva liga en tu panel.'
+          : `Aviso admin: se detectaron ${diff} nuevas ligas en tu panel.`
+      );
+    }
+
+    if (adminLeaguesCount !== previousAdminLeaguesCount) {
+      setPreviousAdminLeaguesCount(adminLeaguesCount);
+    }
+  }, [user, leaguesLoading, adminLeaguesCount, previousAdminLeaguesCount]);
 
   if (loading || leaguesLoading || picksLoading) {
     return (
@@ -262,6 +297,13 @@ function AppContent() {
     <div className="min-h-screen bg-[#F5F2ED] text-[#1A1A1A] selection:bg-[#FF3E00]/20">
       <Header activeLeagueId={selectedLeagueId} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {currentLeague && (
+          <div className="mb-6 border-2 border-black bg-white p-4 sm:p-5">
+            <p className="text-[10px] font-black uppercase tracking-[0.25em] opacity-60">Liga actual (Current league)</p>
+            <h2 className="mt-2 text-xl sm:text-2xl font-black uppercase tracking-wide">{currentLeague.name || currentLeague.id}</h2>
+          </div>
+        )}
+
         {rulesDiag && (
           <div className="mb-6 border-2 border-[#FF3E00] bg-[#FFF1EC] p-4">
             <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">Diagnostico de reglas (Rules diagnostics)</p>
@@ -269,27 +311,58 @@ function AppContent() {
           </div>
         )}
 
-        <div className="mb-10 border-4 border-black bg-white p-6">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-2">Crear liga privada (Create private league)</p>
-          <p className="text-xs font-black uppercase tracking-widest opacity-60 mb-4">
-            Ligas administradas (Admin leagues): {adminLeaguesCount}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <input
-              type="text"
-              value={newLeagueName}
-              onChange={(event) => setNewLeagueName(event.target.value)}
-              placeholder={`Liga Mundial ${profile?.displayName || 'Mi Grupo'}`}
-              className="flex-1 border-4 border-black p-4 text-sm font-black uppercase tracking-wider focus:outline-none"
-            />
+        {adminNotice && (
+          <div className="mb-6 border-2 border-black bg-[#F5F2ED] p-4 flex items-center justify-between gap-3">
+            <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest">{adminNotice}</p>
             <button
-              onClick={handleCreateLeague}
-              disabled={isCreatingLeague || !newLeagueName.trim()}
-              className="bg-black text-white px-6 py-4 text-sm font-black uppercase tracking-widest hover:bg-[#FF3E00] transition-all disabled:opacity-50"
+              type="button"
+              onClick={() => setAdminNotice(null)}
+              className="border-2 border-black px-3 py-1 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-colors"
             >
-              {isCreatingLeague ? 'Creando liga (Creating league)...' : 'Crear liga (Create league)'}
+              Cerrar
             </button>
           </div>
+        )}
+
+        <div className="mb-10 border-4 border-black bg-white p-6">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-2">Crear liga privada (Create private league)</p>
+              <p className="text-xs font-black uppercase tracking-widest opacity-60">
+                Ligas administradas (Admin leagues): {adminLeaguesCount}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setShowCreateLeagueForm((prev) => !prev);
+                setCreateError(null);
+              }}
+              className="border-2 border-black px-4 py-2 text-[10px] sm:text-xs font-black uppercase tracking-widest hover:bg-black hover:text-white transition-colors"
+            >
+              {showCreateLeagueForm ? 'Ocultar formulario' : 'Nueva liga'}
+            </button>
+          </div>
+
+          {showCreateLeagueForm && (
+            <div className="mt-4 flex flex-col sm:flex-row gap-3">
+              <input
+                type="text"
+                value={newLeagueName}
+                onChange={(event) => setNewLeagueName(event.target.value)}
+                placeholder={`Liga Mundial ${profile?.displayName || 'Mi Grupo'}`}
+                className="flex-1 border-4 border-black p-4 text-sm font-black uppercase tracking-wider focus:outline-none"
+              />
+              <button
+                onClick={handleCreateLeague}
+                disabled={isCreatingLeague || !newLeagueName.trim()}
+                className="bg-black text-white px-6 py-4 text-sm font-black uppercase tracking-widest hover:bg-[#FF3E00] transition-all disabled:opacity-50"
+              >
+                {isCreatingLeague ? 'Creando liga (Creating league)...' : 'Crear liga (Create league)'}
+              </button>
+            </div>
+          )}
+
           {createError && (
             <p className="mt-3 text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{createError}</p>
           )}

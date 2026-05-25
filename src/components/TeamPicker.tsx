@@ -20,8 +20,26 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
 
   const pots: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
 
+  const getNextUnselectedPot = (fromPot?: 'A' | 'B' | 'C' | 'D') => {
+    const ordered = fromPot
+      ? [...pots.slice(pots.indexOf(fromPot) + 1), ...pots.slice(0, pots.indexOf(fromPot) + 1)]
+      : pots;
+
+    return ordered.find((pot) => !selections[pot]) || null;
+  };
+
   const handlePick = (teamId: string) => {
-    setSelections(prev => ({ ...prev, [currentPot]: teamId }));
+    setSelections((prev) => {
+      const next = { ...prev, [currentPot]: teamId };
+      const nextPot = [...pots.slice(pots.indexOf(currentPot) + 1), ...pots.slice(0, pots.indexOf(currentPot) + 1)]
+        .find((pot) => !next[pot]);
+
+      if (nextPot) {
+        setCurrentPot(nextPot);
+      }
+
+      return next;
+    });
   };
 
   const handleFinalize = async () => {
@@ -50,6 +68,9 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
 
   const currentSelection = selections[currentPot];
   const allSelected = Object.keys(selections).length === 4;
+  const remainingPots = pots.filter((p) => !selections[p]);
+  const completion = Math.round((Object.keys(selections).length / pots.length) * 100);
+  const nextPendingPot = getNextUnselectedPot(currentPot);
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 sm:space-y-12 pb-28 sm:pb-0">
@@ -97,11 +118,37 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
             <span className="font-serif italic text-lg sm:text-2xl normal-case leading-tight">
               {selections[p] ? WORLD_CUP_TEAMS.find(t => t.id === selections[p])?.name : 'Espacio vacio (Empty slot)'}
             </span>
+            <span className="text-[10px] tracking-wider uppercase opacity-70">
+              {selections[p] ? 'Completado (Completed)' : 'Pendiente (Pending)'}
+            </span>
             {currentPot === p && (
               <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-[#FF3E00] rotate-45" />
             )}
           </button>
         ))}
+      </div>
+
+      <div className="border-4 border-black bg-white p-5 sm:p-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Progreso de seleccion (Selection progress)</p>
+            <p className="text-sm sm:text-base font-bold mt-1">
+              {Object.keys(selections).length}/4 bombos completados. {remainingPots.length > 0 ? `Falta: ${remainingPots.join(', ')}` : 'Plantilla lista para confirmar.'}
+            </p>
+          </div>
+          {nextPendingPot && (
+            <button
+              type="button"
+              onClick={() => setCurrentPot(nextPendingPot)}
+              className="border-2 border-black px-4 py-2 text-xs font-black uppercase tracking-wider hover:bg-black hover:text-white transition-colors"
+            >
+              Ir al siguiente pendiente: {nextPendingPot}
+            </button>
+          )}
+        </div>
+        <div className="mt-4 h-3 border-2 border-black bg-[#F5F2ED]">
+          <div className="h-full bg-[#FF3E00] transition-all duration-300" style={{ width: `${completion}%` }} />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-8">
@@ -136,6 +183,9 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
                   {isSelected ? <CheckCircle2 className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
                 </div>
               </div>
+              <p className="mt-3 text-[10px] font-black uppercase tracking-widest opacity-70">
+                {isSelected ? 'Seleccionado para este bombo' : 'Click para seleccionar'}
+              </p>
             </motion.button>
           );
         })}

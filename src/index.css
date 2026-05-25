@@ -1,15 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,900;1,900&family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Poppins:wght@500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui;
-  --font-serif: "Playfair Display", ui-serif;
+  --font-sans: "Montserrat", ui-sans-serif, system-ui;
+  --font-serif: "Poppins", ui-sans-serif, system-ui;
   --font-mono: "JetBrains Mono", ui-monospace;
 }
 
 @layer base {
   body {
-    @apply bg-[#F5F2ED] text-[#1A1A1A];
+    @apply bg-[#F5F2ED] text-[#1A1A1A] font-sans;
     overflow-x: hidden;
   }
 }

@@ -33,9 +33,9 @@ export const Welcome: React.FC = () => {
           className="text-left"
         >
           <span className="inline-block px-3 py-1 bg-black text-white text-[10px] font-black uppercase tracking-widest mb-8">
-            Mundial 2026 • Edicion editorial (Editorial edition)
+            Mundial 2026
           </span>
-          <h1 className="text-4xl sm:text-8xl font-black tracking-tighter mb-6 sm:mb-10 leading-[0.9] sm:leading-[0.85] italic uppercase font-serif">
+          <h1 className="text-4xl sm:text-6xl font-black tracking-tighter mb-6 sm:mb-10 leading-[0.9] sm:leading-[0.85] italic uppercase font-serif">
             La <span className="text-[#FF3E00]">nueva</span> generacion de <span className="underline decoration-[#FF3E00] decoration-8 underline-offset-8">porras</span>
           </h1>
           <p className="text-base sm:text-xl text-[#1A1A1A] mb-8 sm:mb-12 max-w-xl leading-tight font-medium opacity-80">
@@ -53,11 +53,11 @@ export const Welcome: React.FC = () => {
               type="button"
               onClick={handleJoin}
               disabled={isSubmitting}
-              className="w-full bg-black text-white py-4 sm:py-6 text-base sm:text-2xl font-black uppercase tracking-tight sm:tracking-tighter hover:bg-[#FF3E00] transition-all disabled:opacity-50 flex items-center justify-center gap-2 sm:gap-4 group"
+              className="w-full bg-black text-white p-4 sm:py-6 text-base sm:text-2xl font-black uppercase tracking-tight sm:tracking-tighter hover:bg-[#FF3E00] transition-all disabled:opacity-50 flex items-center justify-center gap-2 sm:gap-4 group"
             >
               {isSubmitting ? 'CONECTANDO (CONNECTING)...' : 'ENTRAR CON GOOGLE (ENTER WITH GOOGLE)'}
               <LogIn className="w-5 h-5 sm:w-8 sm:h-8" />
-              <ArrowRight className="w-5 h-5 sm:w-8 sm:h-8 group-hover:translate-x-2 transition-transform" />
+              {/* <ArrowRight className="w-5 h-5 sm:w-8 sm:h-8 group-hover:translate-x-2 transition-transform" /> */}
             </button>
             <p className="text-[10px] font-black uppercase tracking-widest opacity-40 text-center">
               Una cuenta, varias ligas // Identidad segura por usuario (One account, multiple leagues)
