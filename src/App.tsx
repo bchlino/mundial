@@ -13,6 +13,7 @@ import { db } from './lib/firebase';
 import { arrayUnion, collection, doc, onSnapshot, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
 import ResultsAdmin from './components/ResultsAdmin.tsx';
+import JoinRequestsAdmin from './components/JoinRequestsAdmin.tsx';
 
 interface LeagueData {
   id: string;
@@ -35,6 +36,7 @@ function AppContent() {
   const [isCreatingLeague, setIsCreatingLeague] = useState(false);
   const [isJoiningInviteLeague, setIsJoiningInviteLeague] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
+  const [inviteRequestSent, setInviteRequestSent] = useState(false);
   const [hasProcessedInvite, setHasProcessedInvite] = useState(false);
   const [rulesDiag, setRulesDiag] = useState<string | null>(null);
 
@@ -104,8 +106,7 @@ function AppContent() {
 
     if (!selectedLeagueId) {
       window.localStorage.removeItem('selectedLeagueId');
-      currentUrl.searchParams.delete('league');
-      window.history.replaceState({}, '', currentUrl.toString());
+      // Keep ?league=... in URL so invite links survive until login/join processing.
       return;
     }
 
@@ -131,6 +132,7 @@ function AppContent() {
     const joinInviteLeague = async () => {
       setIsJoiningInviteLeague(true);
       setInviteError(null);
+      setInviteRequestSent(false);
       try {
         await updateDoc(doc(db, 'leagues', urlLeagueId), {
           participants: arrayUnion(user.uid),
@@ -138,7 +140,23 @@ function AppContent() {
         setSelectedLeagueId(urlLeagueId);
       } catch (error) {
         console.error('Error joining invited league:', error);
-        setInviteError('No se pudo unir a la liga del enlace. Verifica que la invitacion sea valida.');
+        try {
+          await setDoc(doc(db, 'leagues', urlLeagueId, 'joinRequests', user.uid), {
+            uid: user.uid,
+            email: user.email || null,
+            displayName: profile?.displayName || user.displayName || null,
+            photoURL: profile?.photoURL || user.photoURL || null,
+            status: 'pending',
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          }, { merge: true });
+
+          setInviteRequestSent(true);
+          setInviteError('No se pudo unir automaticamente. Enviamos tu solicitud al admin de esta liga.');
+        } catch (requestError) {
+          console.error('Error creating join request:', requestError);
+          setInviteError('No se pudo unir a la liga del enlace ni enviar solicitud. Verifica que la invitacion sea valida.');
+        }
       } finally {
         setIsJoiningInviteLeague(false);
         setHasProcessedInvite(true);
@@ -146,7 +164,7 @@ function AppContent() {
     };
 
     joinInviteLeague();
-  }, [user, urlLeagueId, leaguesLoading, leagues, hasProcessedInvite, loading]);
+  }, [user, profile, urlLeagueId, leaguesLoading, leagues, hasProcessedInvite, loading]);
 
   useEffect(() => {
     if (loading) return;
@@ -305,6 +323,12 @@ function AppContent() {
           </div>
         )}
 
+        {currentLeague && user?.uid === currentLeague.adminId && (
+          <div className="mb-10">
+            <JoinRequestsAdmin leagueId={currentLeague.id} adminUid={user.uid} />
+          </div>
+        )}
+
         <AnimatePresence mode="wait">
           {!currentLeague ? (
              <motion.div 
@@ -328,6 +352,12 @@ function AppContent() {
                    <div className="mb-8 p-4 border-2 border-[#FF3E00] bg-[#FFF1EC] text-left">
                      <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00] mb-2">Error de invitacion (Invite error)</p>
                      <p className="text-xs font-black uppercase tracking-widest">{inviteError}</p>
+                   </div>
+                 )}
+                 {inviteRequestSent && (
+                   <div className="mb-8 p-4 border-2 border-black bg-[#F5F2ED] text-left">
+                     <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2">Solicitud enviada (Request sent)</p>
+                     <p className="text-xs font-black uppercase tracking-widest">El admin debe aprobar tu acceso para entrar a esta liga (Admin approval is required).</p>
                    </div>
                  )}
                  <p className="text-[10px] font-black uppercase tracking-widest opacity-60">

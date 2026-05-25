@@ -65,6 +65,27 @@ service cloud.firestore {
                (!existing().participants.hasAny([request.auth.uid]) && incoming().participants.size() == existing().participants.size() + 1)
              );
     }
+    function isValidJoinRequestCreate(userId) {
+      return incoming().keys().hasOnly(['uid', 'email', 'displayName', 'photoURL', 'status', 'createdAt', 'updatedAt']) &&
+             incoming().uid == userId &&
+             incoming().status == 'pending' &&
+             (!('email' in incoming()) || incoming().email == null || incoming().email is string) &&
+             (!('displayName' in incoming()) || incoming().displayName == null || incoming().displayName is string) &&
+             (!('photoURL' in incoming()) || incoming().photoURL == null || incoming().photoURL is string);
+    }
+    function isValidJoinRequestUserUpdate(userId) {
+      return request.auth.uid == userId &&
+             incoming().uid == userId &&
+             incoming().status == 'pending' &&
+             incoming().diff(existing()).affectedKeys().hasOnly(['email', 'displayName', 'photoURL', 'updatedAt']);
+    }
+    function isValidJoinRequestAdminReview(leagueId) {
+      return isLeagueAdmin(leagueId) &&
+             existing().status == 'pending' &&
+             incoming().diff(existing()).affectedKeys().hasOnly(['status', 'reviewedBy', 'approvedAt', 'rejectedAt', 'updatedAt']) &&
+             incoming().reviewedBy == request.auth.uid &&
+             incoming().status in ['approved', 'rejected'];
+    }
 
     match /leagues/{leagueId} {
       allow get: if isSignedIn() && (debugMode() || isLeagueMemberData(resource.data));
@@ -76,6 +97,19 @@ service cloud.firestore {
         isSelfJoinParticipantsUpdate() ||
         (incoming().diff(existing()).affectedKeys().hasOnly(['currentTurnIndex']))
       );
+    }
+
+    match /leagues/{leagueId}/joinRequests/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || isLeagueAdmin(leagueId));
+      allow list: if isSignedIn() && isLeagueAdmin(leagueId);
+      allow create: if isSignedIn() && request.auth.uid == userId &&
+                    !isLeagueMember(leagueId) &&
+                    isValidJoinRequestCreate(userId);
+      allow update: if isSignedIn() && (
+                    (isValidJoinRequestUserUpdate(userId)) ||
+                    (isValidJoinRequestAdminReview(leagueId))
+                  );
+      allow delete: if false;
     }
 
     // Picks
