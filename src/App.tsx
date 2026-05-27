@@ -22,7 +22,20 @@ interface LeagueData {
   adminId: string;
   status: string;
   participants: string[];
+  picksRevealAt?: { toDate?: () => Date } | null;
 }
+
+const toDateTimeLocal = (value: Date) => {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const year = value.getFullYear();
+  const month = pad(value.getMonth() + 1);
+  const day = pad(value.getDate());
+  const hours = pad(value.getHours());
+  const minutes = pad(value.getMinutes());
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
+const leagueRevealDate = (league: LeagueData | null) => league?.picksRevealAt?.toDate?.() ?? null;
 
 function AppContent() {
   const { user, profile, loading } = useAuth();
@@ -44,6 +57,10 @@ function AppContent() {
   const [inviteRequestSent, setInviteRequestSent] = useState(false);
   const [hasProcessedInvite, setHasProcessedInvite] = useState(false);
   const [rulesDiag, setRulesDiag] = useState<string | null>(null);
+  const [revealInputValue, setRevealInputValue] = useState('');
+  const [isSavingRevealDate, setIsSavingRevealDate] = useState(false);
+  const [revealStatus, setRevealStatus] = useState<string | null>(null);
+  const [revealError, setRevealError] = useState<string | null>(null);
 
   useEffect(() => {
     if (loading) {
@@ -249,6 +266,18 @@ function AppContent() {
 
   const currentLeague = leagues.find((league: LeagueData) => league.id === selectedLeagueId) || null;
   const adminLeaguesCount = leagues.filter((league: LeagueData) => league.adminId === user?.uid).length;
+  const currentLeagueRevealDate = leagueRevealDate(currentLeague);
+  const isPickLocked = currentLeagueRevealDate ? Date.now() >= currentLeagueRevealDate.getTime() : false;
+
+  useEffect(() => {
+    if (!currentLeague) {
+      setRevealInputValue('');
+      return;
+    }
+
+    const revealDate = leagueRevealDate(currentLeague);
+    setRevealInputValue(revealDate ? toDateTimeLocal(revealDate) : '');
+  }, [currentLeague?.id, currentLeague?.picksRevealAt]);
 
   useEffect(() => {
     if (!user) {
@@ -283,6 +312,37 @@ function AppContent() {
     }
   }, [user, leaguesLoading, adminLeaguesCount, previousAdminLeaguesCount, tr]);
 
+  const handleSaveRevealDate = async () => {
+    if (!user || !currentLeague || user.uid !== currentLeague.adminId) return;
+
+    setRevealError(null);
+    setRevealStatus(null);
+
+    if (!revealInputValue) {
+      setRevealError(tr('Define fecha y hora para publicar picks.', 'Set date and time to publish picks.'));
+      return;
+    }
+
+    const parsedDate = new Date(revealInputValue);
+    if (Number.isNaN(parsedDate.getTime())) {
+      setRevealError(tr('Fecha invalida.', 'Invalid date.'));
+      return;
+    }
+
+    setIsSavingRevealDate(true);
+    try {
+      await updateDoc(doc(db, 'leagues', currentLeague.id), {
+        picksRevealAt: parsedDate,
+      });
+      setRevealStatus(tr('Fecha de publicacion guardada.', 'Publish date saved.'));
+    } catch (error) {
+      console.error('Error saving picks reveal date:', error);
+      setRevealError(tr('No se pudo guardar la fecha.', 'Could not save date.'));
+    } finally {
+      setIsSavingRevealDate(false);
+    }
+  };
+
   if (loading || leaguesLoading || picksLoading) {
     return (
       <div className="min-h-screen bg-[#F5F2ED] flex items-center justify-center">
@@ -311,6 +371,11 @@ function AppContent() {
           <div className="mb-6 border-2 border-black bg-white p-4 sm:p-5">
             <p className="text-[10px] font-black uppercase tracking-[0.25em] opacity-60">{tr('Liga actual', 'Current league')}</p>
             <h2 className="mt-2 text-xl sm:text-2xl font-black uppercase tracking-wide">{currentLeague.name || currentLeague.id}</h2>
+            {currentLeagueRevealDate && (
+              <p className="mt-2 text-[10px] font-black uppercase tracking-widest opacity-60">
+                {tr('Publicacion picks', 'Picks publish')}: {currentLeagueRevealDate.toLocaleString()}
+              </p>
+            )}
           </div>
         )}
 
@@ -407,6 +472,37 @@ function AppContent() {
         )}
 
         {currentLeague && user?.uid === currentLeague.adminId && (
+          <div className="mb-10 border-4 border-black bg-white p-6">
+            <div className="flex flex-col gap-4">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-serif italic font-black uppercase">{tr('Ventana de picks', 'Picks window')}</h2>
+                <p className="mt-2 text-[10px] font-black uppercase tracking-widest opacity-60">
+                  {tr('Hasta esta fecha los jugadores pueden editar. Al llegar, se bloquea y se publican picks.', 'Players can edit until this date. When reached, editing locks and picks are published.')}
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input
+                  type="datetime-local"
+                  value={revealInputValue}
+                  onChange={(event) => setRevealInputValue(event.target.value)}
+                  className="border-4 border-black p-3 text-xs font-black uppercase tracking-widest"
+                />
+                <button
+                  type="button"
+                  onClick={handleSaveRevealDate}
+                  disabled={isSavingRevealDate}
+                  className="bg-black text-white px-5 py-3 text-xs font-black uppercase tracking-widest hover:bg-[#FF3E00] transition-colors disabled:opacity-50"
+                >
+                  {isSavingRevealDate ? tr('Guardando...', 'Saving...') : tr('Guardar fecha de publicacion', 'Save publish date')}
+                </button>
+              </div>
+              {revealStatus && <p className="text-[10px] font-black uppercase tracking-widest text-green-700">{revealStatus}</p>}
+              {revealError && <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{revealError}</p>}
+            </div>
+          </div>
+        )}
+
+        {currentLeague && user?.uid === currentLeague.adminId && (
           <div className="mb-10">
             <JoinRequestsAdmin leagueId={currentLeague.id} adminUid={user.uid} />
           </div>
@@ -448,6 +544,8 @@ function AppContent() {
                  </p>
                </div>
              </motion.div>
+          ) : !isPickLocked ? (
+            <TeamPicker key={`picker-${currentLeague.id}`} league={currentLeague} />
           ) : !userPicks || (userPicks.teamIds || []).length < 4 ? (
             <TeamPicker key={`picker-${currentLeague.id}`} league={currentLeague} />
           ) : (

@@ -42,6 +42,13 @@ service cloud.firestore {
              data.adminId is string &&
              data.status in ['setup', 'drafting', 'active', 'completed'];
     }
+    function isValidPicksRevealAt(value) {
+      return value == null || value is timestamp;
+    }
+    function picksAreUnlocked(leagueId) {
+      let league = get(/databases/$(database)/documents/leagues/$(leagueId)).data;
+      return !('picksRevealAt' in league) || league.picksRevealAt == null || request.time < league.picksRevealAt;
+    }
     function isLeagueAdmin(leagueId) {
       return get(/databases/$(database)/documents/leagues/$(leagueId)).data.adminId == request.auth.uid;
     }
@@ -93,7 +100,11 @@ service cloud.firestore {
       allow create: if isSignedIn() && isValidLeague(incoming()) && incoming().adminId == request.auth.uid;
       allow update: if isSignedIn() && (
         (debugMode()) ||
-        (isLeagueAdmin(leagueId) && incoming().diff(existing()).affectedKeys().hasAny(['status', 'draftOrder', 'currentTurnIndex', 'participants'])) ||
+        (
+          isLeagueAdmin(leagueId) &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'draftOrder', 'currentTurnIndex', 'participants', 'picksRevealAt']) &&
+          (!('picksRevealAt' in incoming()) || isValidPicksRevealAt(incoming().picksRevealAt))
+        ) ||
         isSelfJoinParticipantsUpdate() ||
         (incoming().diff(existing()).affectedKeys().hasOnly(['currentTurnIndex']))
       );
@@ -125,7 +136,8 @@ service cloud.firestore {
                              (debugMode() ||
                              request.auth.uid == userId && 
                              isValidPick(incoming()) &&
-                             isLeagueMember(leagueId));
+                             isLeagueMember(leagueId) &&
+                             picksAreUnlocked(leagueId));
     }
 
     // Match Results (Global)

@@ -15,6 +15,7 @@ interface LeagueData {
   adminId: string;
   status: string;
   participants: string[];
+   picksRevealAt?: { toDate?: () => Date } | null;
 }
 
 export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
@@ -138,7 +139,10 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
       return league.participants.filter((uid) => (picks[uid]?.teamIds || []).length === 4).length;
    }, [league.participants, picks]);
 
-   const hideOpponentTeams = participantsReadyCount < league.participants.length;
+   const picksRevealAtDate = league.picksRevealAt?.toDate?.() ?? null;
+   const picksArePublished = picksRevealAtDate ? Date.now() >= picksRevealAtDate.getTime() : false;
+
+   const hideOpponentTeams = !picksArePublished;
 
   const handleSetTapado = async (teamId: string) => {
     if (!user) return;
@@ -259,7 +263,11 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
              {hideOpponentTeams && (
                 <div className="mb-6 border-2 border-black bg-[#F5F2ED] p-4">
                    <p className="text-[10px] font-black uppercase tracking-widest opacity-70">
-                      {tr('Modo picks ocultos activo: se revelaran cuando todos completen su seleccion', 'Hidden picks mode is active: picks will be revealed when everyone completes their selection')} ({participantsReadyCount}/{league.participants.length}).
+                      {tr('Modo picks ocultos activo. Se publicaran automaticamente en la fecha definida por el admin.', 'Hidden picks mode is active. Picks will be published automatically on the admin date.')}
+                      {picksRevealAtDate ? ` ${tr('Fecha', 'Date')}: ${picksRevealAtDate.toLocaleString()}.` : ''}
+                   </p>
+                   <p className="mt-2 text-[10px] font-black uppercase tracking-widest opacity-60">
+                      {tr('Jugadores con plantilla completa', 'Players with complete squad')}: {participantsReadyCount}/{league.participants.length}
                    </p>
                 </div>
              )}

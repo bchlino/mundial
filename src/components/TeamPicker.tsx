@@ -11,6 +11,7 @@ import { useLanguage } from '../lib/LanguageContext';
 interface LeagueData {
   id: string;
   name: string;
+  picksRevealAt?: { toDate?: () => Date } | null;
 }
 
 export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
@@ -19,8 +20,50 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
   const [currentPot, setCurrentPot] = useState<'A' | 'B' | 'C' | 'D'>('A');
   const [selections, setSelections] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingExisting, setIsLoadingExisting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const pots: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
+  const picksRevealAtDate = league.picksRevealAt?.toDate?.() ?? null;
+  const isSelectionLocked = picksRevealAtDate ? Date.now() >= picksRevealAtDate.getTime() : false;
+
+  useEffect(() => {
+    if (!user?.uid) {
+      setSelections({});
+      return;
+    }
+
+    const loadExistingPicks = async () => {
+      setIsLoadingExisting(true);
+      setErrorMessage(null);
+      try {
+        const existingDoc = await getDoc(doc(db, 'leagues', league.id, 'picks', user.uid));
+        if (!existingDoc.exists()) {
+          setSelections({});
+          return;
+        }
+
+        const existing = existingDoc.data() as { teamIds?: string[] };
+        const byPot: Record<string, string> = {};
+        (existing.teamIds || []).forEach((teamId) => {
+          const foundTeam = WORLD_CUP_TEAMS.find((team) => team.id === teamId);
+          if (foundTeam) {
+            byPot[foundTeam.pot] = foundTeam.id;
+          }
+        });
+
+        setSelections(byPot);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.READ, `leagues/${league.id}/picks/${user.uid}`);
+        setErrorMessage(tr('No se pudo cargar tu seleccion actual.', 'Could not load your current selection.'));
+      } finally {
+        setIsLoadingExisting(false);
+      }
+    };
+
+    loadExistingPicks();
+  }, [league.id, user?.uid, tr]);
 
   const getNextUnselectedPot = (fromPot?: 'A' | 'B' | 'C' | 'D') => {
     const ordered = fromPot
@@ -31,6 +74,13 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
   };
 
   const handlePick = (teamId: string) => {
+    if (isSelectionLocked) {
+      setErrorMessage(tr('La seleccion ya esta cerrada para esta liga.', 'Selection is already locked for this league.'));
+      return;
+    }
+
+    setStatusMessage(null);
+    setErrorMessage(null);
     setSelections((prev) => {
       const next = { ...prev, [currentPot]: teamId };
       const nextPot = [...pots.slice(pots.indexOf(currentPot) + 1), ...pots.slice(0, pots.indexOf(currentPot) + 1)]
@@ -46,10 +96,16 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
 
   const handleFinalize = async () => {
     if (!user || Object.keys(selections).length < 4) return;
+    if (isSelectionLocked) {
+      setErrorMessage(tr('La fecha limite ya paso. Ya no puedes editar tus paises.', 'The deadline has passed. You can no longer edit your countries.'));
+      return;
+    }
     
     setIsSubmitting(true);
+    setStatusMessage(null);
+    setErrorMessage(null);
     try {
-      const teamIds = Object.values(selections);
+      const teamIds = pots.map((pot) => selections[pot]).filter(Boolean);
       await setDoc(doc(db, 'leagues', league.id, 'picks', user.uid), {
         userId: user.uid,
         teamIds,
@@ -61,8 +117,11 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
       await updateDoc(leagueRef, {
         participants: arrayUnion(user.uid)
       });
+
+      setStatusMessage(tr('Tu seleccion fue guardada. Puedes cambiarla hasta la fecha limite.', 'Your selection was saved. You can edit it until the deadline.'));
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, `leagues/${league.id}/picks/${user.uid}`);
+      setErrorMessage(tr('No se pudo guardar la seleccion. Intentalo de nuevo.', 'Could not save the selection. Please try again.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -137,6 +196,11 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
             <p className="text-sm sm:text-base font-bold mt-1">
               {Object.keys(selections).length}/4 {tr('bombos completados.', 'pots completed.')} {remainingPots.length > 0 ? `${tr('Falta', 'Missing')}: ${remainingPots.join(', ')}` : tr('Plantilla lista para confirmar.', 'Squad ready to confirm.')}
             </p>
+            {picksRevealAtDate && (
+              <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mt-2">
+                {tr('Cierre de seleccion', 'Selection lock')}: {picksRevealAtDate.toLocaleString()}
+              </p>
+            )}
           </div>
           {nextPendingPot && (
             <button
@@ -151,6 +215,22 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
         <div className="mt-4 h-3 border-2 border-black bg-[#F5F2ED]">
           <div className="h-full bg-[#FF3E00] transition-all duration-300" style={{ width: `${completion}%` }} />
         </div>
+        {isLoadingExisting && (
+          <p className="mt-4 text-[10px] font-black uppercase tracking-widest opacity-60">
+            {tr('Cargando seleccion guardada...', 'Loading saved selection...')}
+          </p>
+        )}
+        {isSelectionLocked && (
+          <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">
+            {tr('La seleccion quedo bloqueada. Espera la publicacion de picks.', 'Selection is locked. Wait for picks to be published.')}
+          </p>
+        )}
+        {statusMessage && (
+          <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-green-700">{statusMessage}</p>
+        )}
+        {errorMessage && (
+          <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{errorMessage}</p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-8">
@@ -161,11 +241,13 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
               key={team.id}
               whileHover={{ x: 4, y: -4 }}
               onClick={() => handlePick(team.id)}
+              disabled={isSelectionLocked || isLoadingExisting}
               className={cn(
                 "relative p-5 sm:p-8 border-4 transition-all text-left flex flex-col min-h-50 sm:min-h-55",
                 isSelected 
                   ? "bg-black text-white border-black shadow-[10px_10px_0px_0px_rgba(255,62,0,1)]" 
-                  : "bg-white border-black hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,0.1)] cursor-pointer"
+                  : "bg-white border-black hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,0.1)] cursor-pointer",
+                (isSelectionLocked || isLoadingExisting) && "opacity-60 cursor-not-allowed hover:shadow-none"
               )}
             >
               <div className="flex-1 mt-6">
@@ -202,10 +284,10 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
           >
             <button
               onClick={handleFinalize}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isSelectionLocked || isLoadingExisting}
               className="w-full max-w-xl bg-black text-white px-5 sm:px-12 py-4 sm:py-8 text-base sm:text-3xl font-serif italic font-black uppercase tracking-tight sm:tracking-tighter border-4 sm:border-8 border-white shadow-[12px_12px_0px_0px_rgba(255,62,0,1)] sm:shadow-[24px_24px_0px_0px_rgba(255,62,0,1)] hover:bg-[#FF3E00] transition-all flex items-center justify-center gap-3 sm:gap-8 group"
             >
-              {isSubmitting ? tr('Sincronizando...', 'Syncing...') : tr('Confirmar selecciones', 'Confirm selections')}
+              {isSubmitting ? tr('Sincronizando...', 'Syncing...') : tr('Guardar seleccion', 'Save selection')}
               <Trophy className="w-6 h-6 sm:w-10 sm:h-10 group-hover:rotate-12 transition-transform" />
             </button>
           </motion.div>
