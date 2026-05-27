@@ -253,7 +253,7 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
               <div className="flex-1 mt-6">
                 <div className="text-4xl sm:text-5xl mb-4 sm:mb-6">{team.flag}</div>
                 <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1 block">{tr('Nivel nacional', 'National tier')}</span>
-                <h4 className="font-serif italic text-3xl sm:text-4xl font-black uppercase leading-tight wrap-break-word">{team.name}</h4>
+                <h4 className="font-serif italic text-3xl font-black uppercase leading-tight wrap-break-word">{team.name}</h4>
               </div>
               
               <div className="mt-8 pt-6 border-t border-black/10 flex justify-between items-end">
