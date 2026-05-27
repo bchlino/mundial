@@ -93,7 +93,7 @@ export const Header: React.FC<HeaderProps> = ({ activeLeagueId }) => {
                     className="font-serif italic text-2xl tracking-tight leading-none group cursor-pointer hover:text-[#FF3E00] transition-colors truncate max-w-70"
                     title={tr('Editar nombre', 'Edit name')}
                   >
-                    {profile?.displayName?.split(' ')[0] || tr('Jugador', 'Player')} <span className="text-xs uppercase font-sans not-italic font-black border-2 border-black px-2 py-0.5 ml-1">{tr('Sala de draft', 'Draft room')}</span>
+                    {profile?.displayName?.split(' ')[0] || tr('Jugador', 'Player')} <span className="text-xs uppercase font-sans not-italic font-black border-2 border-black px-2 py-0.5 ml-1">{tr('Cambiar', 'Change')}</span>
                   </div>
                 )}
                 <div className="text-[10px] font-black uppercase opacity-60 mt-1">{profile?.email || tr('Acceso con Google', 'Google access')}</div>
@@ -131,7 +131,7 @@ export const Header: React.FC<HeaderProps> = ({ activeLeagueId }) => {
             onClick={handleCopyInviteLink}
             className="sm:hidden w-full border-2 border-black px-4 py-2 text-[10px] font-black uppercase hover:bg-black hover:text-white transition-all"
           >
-            {tr('Copiar enlace de invitacion', 'Copy invite link')}
+            {tr('Copiar enlace', 'Copy invite link')}
           </button>
         )}
       </div>
