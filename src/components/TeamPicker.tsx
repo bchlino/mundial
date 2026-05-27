@@ -4,7 +4,7 @@ import { db, OperationType, handleFirestoreError } from '../lib/firebase';
 import { doc, updateDoc, setDoc, getDoc, arrayUnion } from 'firebase/firestore';
 import { WORLD_CUP_TEAMS, Team } from '../lib/teams';
 import { motion, AnimatePresence } from 'motion/react';
-import { Info, CheckCircle2, ChevronRight, Trophy } from 'lucide-react';
+import { Info, CheckCircle2, ChevronRight, Trophy, Star } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useLanguage } from '../lib/LanguageContext';
 
@@ -19,6 +19,7 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
   const { tr } = useLanguage();
   const [currentPot, setCurrentPot] = useState<'A' | 'B' | 'C' | 'D'>('A');
   const [selections, setSelections] = useState<Record<string, string>>({});
+  const [tapadoId, setTapadoId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingExisting, setIsLoadingExisting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -41,10 +42,11 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
         const existingDoc = await getDoc(doc(db, 'leagues', league.id, 'picks', user.uid));
         if (!existingDoc.exists()) {
           setSelections({});
+          setTapadoId(null);
           return;
         }
 
-        const existing = existingDoc.data() as { teamIds?: string[] };
+        const existing = existingDoc.data() as { teamIds?: string[]; tapadoId?: string };
         const byPot: Record<string, string> = {};
         (existing.teamIds || []).forEach((teamId) => {
           const foundTeam = WORLD_CUP_TEAMS.find((team) => team.id === teamId);
@@ -54,8 +56,9 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
         });
 
         setSelections(byPot);
+        setTapadoId(existing.tapadoId || null);
       } catch (err) {
-        handleFirestoreError(err, OperationType.READ, `leagues/${league.id}/picks/${user.uid}`);
+        handleFirestoreError(err, OperationType.GET, `leagues/${league.id}/picks/${user.uid}`);
         setErrorMessage(tr('No se pudo cargar tu seleccion actual.', 'Could not load your current selection.'));
       } finally {
         setIsLoadingExisting(false);
@@ -83,6 +86,12 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
     setErrorMessage(null);
     setSelections((prev) => {
       const next = { ...prev, [currentPot]: teamId };
+      const selectedTeams = pots.map((pot) => next[pot]).filter(Boolean) as string[];
+
+      if (tapadoId && !selectedTeams.includes(tapadoId)) {
+        setTapadoId(null);
+      }
+
       const nextPot = [...pots.slice(pots.indexOf(currentPot) + 1), ...pots.slice(0, pots.indexOf(currentPot) + 1)]
         .find((pot) => !next[pot]);
 
@@ -92,6 +101,17 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
 
       return next;
     });
+  };
+
+  const handleSetTapado = (teamId: string) => {
+    if (isSelectionLocked) {
+      setErrorMessage(tr('La seleccion ya esta cerrada para esta liga.', 'Selection is already locked for this league.'));
+      return;
+    }
+
+    setStatusMessage(null);
+    setErrorMessage(null);
+    setTapadoId((prev) => (prev === teamId ? null : teamId));
   };
 
   const handleFinalize = async () => {
@@ -109,6 +129,7 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
       await setDoc(doc(db, 'leagues', league.id, 'picks', user.uid), {
         userId: user.uid,
         teamIds,
+        tapadoId: tapadoId || null,
         updatedAt: new Date().toISOString()
       }, { merge: true });
 
@@ -118,7 +139,7 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
         participants: arrayUnion(user.uid)
       });
 
-      setStatusMessage(tr('Tu seleccion fue guardada. Puedes cambiarla hasta la fecha limite.', 'Your selection was saved. You can edit it until the deadline.'));
+      setStatusMessage(tr('Tu seleccion fue guardada. Puedes cambiarla (incluido el tapado) hasta la fecha limite.', 'Your selection was saved. You can edit it (including wildcard) until the deadline.'));
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, `leagues/${league.id}/picks/${user.uid}`);
       setErrorMessage(tr('No se pudo guardar la seleccion. Intentalo de nuevo.', 'Could not save the selection. Please try again.'));
@@ -129,6 +150,11 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
 
   const currentSelection = selections[currentPot];
   const allSelected = Object.keys(selections).length === 4;
+  const selectedTeams = pots
+    .map((pot) => selections[pot])
+    .filter(Boolean)
+    .map((teamId) => WORLD_CUP_TEAMS.find((team) => team.id === teamId))
+    .filter(Boolean) as Team[];
   const remainingPots = pots.filter((p) => !selections[p]);
   const completion = Math.round((Object.keys(selections).length / pots.length) * 100);
   const nextPendingPot = getNextUnselectedPot(currentPot);
@@ -232,6 +258,44 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
           <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{errorMessage}</p>
         )}
       </div>
+
+      {allSelected && (
+        <div className="border-4 border-black bg-white p-5 sm:p-6">
+          <p className="text-[10px] font-black uppercase tracking-widest opacity-60">
+            {tr('Tapado (opcional y privado)', 'Wildcard (optional and private)')}
+          </p>
+          <p className="text-xs font-black uppercase tracking-widest opacity-70 mt-2">
+            {tr('Solo tu lo ves. El resto de jugadores no vera tu tapado.', 'Only you can see it. Other players will not see your wildcard.')}
+          </p>
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+            {selectedTeams.map((team) => {
+              const isTapado = tapadoId === team.id;
+
+              return (
+                <button
+                  key={team.id}
+                  type="button"
+                  onClick={() => handleSetTapado(team.id)}
+                  disabled={isSelectionLocked || isLoadingExisting}
+                  className={cn(
+                    'border-2 border-black px-4 py-3 text-left transition-colors',
+                    isTapado ? 'bg-black text-white' : 'bg-[#F5F2ED] hover:bg-white',
+                    (isSelectionLocked || isLoadingExisting) && 'opacity-60 cursor-not-allowed'
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-lg font-serif italic font-black uppercase">{team.flag} {team.name}</span>
+                    <Star className={cn('w-4 h-4', isTapado ? 'text-[#FF3E00] fill-current' : 'opacity-40')} />
+                  </div>
+                  <p className="mt-2 text-[10px] font-black uppercase tracking-widest opacity-70">
+                    {isTapado ? tr('Tapado activo', 'Active wildcard') : tr('Marcar como tapado', 'Mark as wildcard')}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-8">
         {WORLD_CUP_TEAMS.filter(t => t.pot === currentPot).map(team => {
