@@ -1,14 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../lib/AuthContext';
 import { signInWithGoogle, logout } from '../lib/firebase';
-import { Trophy, LogOut, LogIn, User as UserIcon, Check } from 'lucide-react';
+import { LogOut, LogIn, User as UserIcon, Check } from 'lucide-react';
 import { useLanguage } from '../lib/LanguageContext';
 
-interface HeaderProps {
-  activeLeagueId?: string | null;
-}
-
-export const Header: React.FC<HeaderProps> = ({ activeLeagueId }) => {
+export const Header: React.FC = () => {
   const { user, profile, updateProfile } = useAuth();
   const { language, setLanguage, tr } = useLanguage();
   const [isEditing, setIsEditing] = useState(false);
@@ -19,19 +15,6 @@ export const Header: React.FC<HeaderProps> = ({ activeLeagueId }) => {
       await updateProfile(newName.toUpperCase());
       setIsEditing(false);
     }
-  };
-
-  const handleCopyInviteLink = async () => {
-    const inviteUrl = new URL(window.location.href);
-
-    if (activeLeagueId) {
-      inviteUrl.searchParams.set('league', activeLeagueId);
-    } else {
-      inviteUrl.searchParams.delete('league');
-    }
-
-    await navigator.clipboard.writeText(inviteUrl.toString());
-    alert(tr('Enlace de invitacion copiado. Compartelo con tu grupo.', 'Invite link copied. Share it with your group.'));
   };
 
   return (
@@ -56,14 +39,6 @@ export const Header: React.FC<HeaderProps> = ({ activeLeagueId }) => {
             <option value="es">ES</option>
             <option value="en">EN</option>
           </select>
-          {user && (
-            <button
-              onClick={handleCopyInviteLink}
-              className="hidden sm:flex border-2 border-black px-4 py-2 text-[10px] font-black uppercase hover:bg-black hover:text-white transition-all items-center gap-2"
-            >
-              {tr('Copiar enlace', 'Copy invite link')}
-            </button>
-          )}
           {user ? (
             <div className="flex items-center gap-3 sm:gap-6 max-w-full">
               <div className="text-right hidden sm:block">
@@ -125,15 +100,6 @@ export const Header: React.FC<HeaderProps> = ({ activeLeagueId }) => {
             </button>
           )}
         </div>
-
-        {user && (
-          <button
-            onClick={handleCopyInviteLink}
-            className="sm:hidden w-full border-2 border-black px-4 py-2 text-[10px] font-black uppercase hover:bg-black hover:text-white transition-all"
-          >
-            {tr('Copiar enlace', 'Copy invite link')}
-          </button>
-        )}
       </div>
     </header>
   );

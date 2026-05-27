@@ -61,6 +61,7 @@ function AppContent() {
   const [isSavingRevealDate, setIsSavingRevealDate] = useState(false);
   const [revealStatus, setRevealStatus] = useState<string | null>(null);
   const [revealError, setRevealError] = useState<string | null>(null);
+  const [inviteCopyStatus, setInviteCopyStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (loading) {
@@ -343,6 +344,26 @@ function AppContent() {
     }
   };
 
+  const handleCopyInviteLink = async () => {
+    const inviteUrl = new URL(window.location.href);
+
+    if (selectedLeagueId) {
+      inviteUrl.searchParams.set('league', selectedLeagueId);
+    } else {
+      inviteUrl.searchParams.delete('league');
+    }
+
+    try {
+      await navigator.clipboard.writeText(inviteUrl.toString());
+      setInviteCopyStatus(tr('Enlace de invitacion copiado.', 'Invite link copied.'));
+      window.setTimeout(() => setInviteCopyStatus(null), 2200);
+    } catch (error) {
+      console.error('Error copying invite link:', error);
+      setInviteCopyStatus(tr('No se pudo copiar el enlace.', 'Could not copy invite link.'));
+      window.setTimeout(() => setInviteCopyStatus(null), 2600);
+    }
+  };
+
   if (loading || leaguesLoading || picksLoading) {
     return (
       <div className="min-h-screen bg-[#F5F2ED] flex items-center justify-center">
@@ -357,7 +378,7 @@ function AppContent() {
   if (!user) {
     return (
       <div className="min-h-screen bg-[#F5F2ED] text-[#1A1A1A]">
-        <Header activeLeagueId={null} />
+        <Header />
         <Welcome />
       </div>
     );
@@ -365,16 +386,30 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-[#F5F2ED] text-[#1A1A1A] selection:bg-[#FF3E00]/20">
-      <Header activeLeagueId={selectedLeagueId} />
+      <Header />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {currentLeague && (
           <div className="mb-6 border-2 border-black bg-white p-4 sm:p-5">
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] opacity-60">{tr('Liga actual', 'Current league')}</p>
-            <h2 className="mt-2 text-xl sm:text-2xl font-black uppercase tracking-wide">{currentLeague.name || currentLeague.id}</h2>
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.25em] opacity-60">{tr('Liga actual', 'Current league')}</p>
+                <h2 className="mt-2 text-xl sm:text-2xl font-black uppercase tracking-wide">{currentLeague.name || currentLeague.id}</h2>
+              </div>
+              <button
+                type="button"
+                onClick={handleCopyInviteLink}
+                className="border-2 border-black px-4 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-colors self-start"
+              >
+                {tr('Copiar enlace de invitacion', 'Copy invite link')}
+              </button>
+            </div>
             {currentLeagueRevealDate && (
               <p className="mt-2 text-[10px] font-black uppercase tracking-widest opacity-60">
                 {tr('Publicacion picks', 'Picks publish')}: {currentLeagueRevealDate.toLocaleString()}
               </p>
+            )}
+            {inviteCopyStatus && (
+              <p className="mt-2 text-[10px] font-black uppercase tracking-widest opacity-70">{inviteCopyStatus}</p>
             )}
           </div>
         )}
