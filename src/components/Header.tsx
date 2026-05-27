@@ -61,7 +61,7 @@ export const Header: React.FC<HeaderProps> = ({ activeLeagueId }) => {
               onClick={handleCopyInviteLink}
               className="hidden sm:flex border-2 border-black px-4 py-2 text-[10px] font-black uppercase hover:bg-black hover:text-white transition-all items-center gap-2"
             >
-              {tr('Copiar enlace de invitacion', 'Copy invite link')}
+              {tr('Copiar enlace', 'Copy invite link')}
             </button>
           )}
           {user ? (
