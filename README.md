@@ -80,6 +80,24 @@ Formato JSON compatible:
 
 Tambien se acepta un array plano de partidos como raiz del JSON.
 
+Valores de `stage` soportados:
+
+- `groups`
+- `round32` (16avos)
+- `round16` (octavos)
+- `quarters`
+- `semis`
+- `final`
+
+Regla de puntuacion por victoria:
+
+- Grupos: +3 (empate +1)
+- 16avos (`round32`): +4
+- Octavos (`round16`): +6
+- Cuartos: +8
+- Semifinal: +10
+- Final: +12
+
 ### 2) Configurar variables de entorno en frontend
 
 Agregar en `.env.local` (o en Vercel):

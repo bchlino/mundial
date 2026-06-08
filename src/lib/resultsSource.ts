@@ -15,10 +15,12 @@ interface ResultsPayload {
 
 function normalizeStage(value: unknown): MatchResult['stage'] {
   const stage = String(value || '').toLowerCase();
+  if (stage === 'round_of_32' || stage === 'last_32') return 'round32';
+  if (stage === 'round of 32' || stage === '1/16 final' || stage === '16vos') return 'round32';
   if (stage === 'round_of_16') return 'round16';
   if (stage === 'quarterfinals') return 'quarters';
   if (stage === 'semifinals') return 'semis';
-  if (stage === 'groups' || stage === 'round16' || stage === 'quarters' || stage === 'semis' || stage === 'final') {
+  if (stage === 'groups' || stage === 'round32' || stage === 'round16' || stage === 'quarters' || stage === 'semis' || stage === 'final') {
     return stage;
   }
   return 'groups';

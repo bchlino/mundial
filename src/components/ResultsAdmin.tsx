@@ -82,6 +82,7 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
 
   const getStageLabel = (stage: Stage) => {
     if (stage === 'groups') return tr('Grupos', 'Groups');
+    if (stage === 'round32') return tr('16avos', 'Round of 32');
     if (stage === 'round16') return tr('Octavos', 'Round of 16');
     if (stage === 'quarters') return tr('Cuartos', 'Quarterfinals');
     if (stage === 'semis') return tr('Semifinal', 'Semifinals');

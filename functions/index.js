@@ -103,6 +103,7 @@ function mapTeamNameToId(name) {
 function mapStage(stageValue) {
   const stage = String(stageValue || "").toUpperCase();
   if (stage === "GROUP_STAGE" || stage === "GROUPS") return "groups";
+  if (stage === "LAST_32" || stage === "ROUND_OF_32") return "round32";
   if (stage === "LAST_16" || stage === "ROUND_OF_16") return "round16";
   if (stage === "QUARTER_FINALS" || stage === "QUARTERFINALS") return "quarters";
   if (stage === "SEMI_FINALS" || stage === "SEMIFINALS") return "semis";

@@ -166,13 +166,14 @@ export const Welcome: React.FC = () => {
             </div>
             <div className="p-4 border border-black">
               <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">{tr('Eliminatorias', 'Knockout')}</p>
-              <p className="text-xs font-black uppercase tracking-wider">{tr('Octavos: +4', 'Round of 16: +4')}</p>
-              <p className="text-xs font-black uppercase tracking-wider">{tr('Cuartos: +6', 'Quarterfinals: +6')}</p>
+              <p className="text-xs font-black uppercase tracking-wider">{tr('16avos: +4', 'Round of 32: +4')}</p>
+              <p className="text-xs font-black uppercase tracking-wider">{tr('Octavos: +6', 'Round of 16: +6')}</p>
+              <p className="text-xs font-black uppercase tracking-wider">{tr('Cuartos: +8', 'Quarterfinals: +8')}</p>
             </div>
             <div className="p-4 border border-black">
               <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-2">{tr('Finales', 'Final rounds')}</p>
-              <p className="text-xs font-black uppercase tracking-wider">{tr('Semifinal: +8', 'Semifinal: +8')}</p>
-              <p className="text-xs font-black uppercase tracking-wider">{tr('Final: +10', 'Final: +10')}</p>
+              <p className="text-xs font-black uppercase tracking-wider">{tr('Semifinal: +10', 'Semifinal: +10')}</p>
+              <p className="text-xs font-black uppercase tracking-wider">{tr('Final: +12', 'Final: +12')}</p>
             </div>
           </div>
         </div>

@@ -414,13 +414,14 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                </div>
                <div>
                   <p className="font-serif italic text-xl sm:text-2xl mb-2 underline decoration-[#FF3E00]">{tr('Eliminatorias', 'Knockout')}</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">{tr('Octavos: +4 pts', 'Round of 16: +4 pts')}</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">{tr('Cuartos: +6 pts', 'Quarterfinals: +6 pts')}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">{tr('16avos: +4 pts', 'Round of 32: +4 pts')}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">{tr('Octavos: +6 pts', 'Round of 16: +6 pts')}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">{tr('Cuartos: +8 pts', 'Quarterfinals: +8 pts')}</p>
                </div>
                <div>
                   <p className="font-serif italic text-xl sm:text-2xl mb-2 underline decoration-[#FF3E00]">{tr('Fase final', 'Final rounds')}</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">{tr('Semifinal: +8 pts', 'Semis: +8 pts')}</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">{tr('Final: +10 pts', 'Final: +10 pts')}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">{tr('Semifinal: +10 pts', 'Semis: +10 pts')}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-80">{tr('Final: +12 pts', 'Final: +12 pts')}</p>
                </div>
                <div>
                   <p className="font-serif italic text-xl sm:text-2xl mb-2 text-[#FF3E00]">{tr('El tapado', 'Wildcard')}</p>
