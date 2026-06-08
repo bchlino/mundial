@@ -1,0 +1,30 @@
+{
+  "updatedAt": "2026-06-08T00:00:00Z",
+  "source": "manual-test",
+  "meta": {
+    "provider": "manual-test",
+    "fetched": 2,
+    "included": 2,
+    "skipped": 0
+  },
+  "matches": [
+    {
+      "id": "test-argentina-france",
+      "homeTeam": "argentina",
+      "awayTeam": "france",
+      "homeGoals": 2,
+      "awayGoals": 1,
+      "stage": "final",
+      "finished": true
+    },
+    {
+      "id": "test-spain-brazil",
+      "homeTeam": "spain",
+      "awayTeam": "brazil",
+      "homeGoals": 1,
+      "awayGoals": 1,
+      "stage": "groups",
+      "finished": true
+    }
+  ]
+}

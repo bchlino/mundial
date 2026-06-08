@@ -12,6 +12,8 @@
     "functions:install": "npm --prefix functions install",
     "functions:serve": "npm --prefix functions run serve",
     "results:update-gist": "node scripts/update-worldcup-gist.mjs",
+    "results:publish:test": "node scripts/publish-gist-json.mjs scripts/data/test-matches.json",
+    "results:publish:empty": "node scripts/publish-gist-json.mjs scripts/data/empty-matches.json",
     "firebase:functions:deploy": "npx -y firebase-tools deploy --only functions --project gen-lang-client-0384172144",
     "firebase:login": "npx -y firebase-tools login",
     "firebase:rules:deploy": "npx -y firebase-tools deploy --only firestore --project gen-lang-client-0384172144"

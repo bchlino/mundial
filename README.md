@@ -126,10 +126,34 @@ Se agrego:
 - `GIST_FILE_NAME` (default: `matches.json`)
 - `RESULTS_SOURCE_NAME` (default: `football-data.org`)
 
+Nota de comportamiento:
+
+- Si `FOOTBALL_DATA_STATUS=FINISHED` devuelve 0 partidos, el script reintenta automaticamente sin filtro de estado para evitar un Gist vacio.
+- Si quieres forzar sin filtro desde el inicio, define `FOOTBALL_DATA_STATUS` como string vacio en el workflow/repo variables.
+
 #### Ejecutar manualmente
 
 - En GitHub: Actions -> `Update World Cup Gist` -> Run workflow.
 - En local: `npm run results:update-gist` (con variables de entorno cargadas).
+
+#### Prueba rapida de consumo en Vercel (sin esperar partidos oficiales)
+
+Puedes publicar datos de prueba y luego limpiar:
+
+- Local test: `npm run results:publish:test`
+- Local limpiar: `npm run results:publish:empty`
+
+O desde GitHub Actions manual (Run workflow) usando input `mode`:
+
+- `test`: publica 2 partidos de ejemplo.
+- `empty`: deja `matches: []`.
+- `auto`: usa football-data.org.
+
+Flujo recomendado de validacion:
+
+1. Ejecutar workflow en modo `test`.
+2. Verificar en Vercel que tabla admin/dashboard muestran esos resultados.
+3. Ejecutar workflow en modo `empty` para volver a estado limpio hasta el Mundial.
 
 #### Consumir desde Vercel
 

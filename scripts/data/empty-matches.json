@@ -1,0 +1,11 @@
+{
+  "updatedAt": "2026-06-08T00:00:00Z",
+  "source": "manual-empty",
+  "meta": {
+    "provider": "manual-empty",
+    "fetched": 0,
+    "included": 0,
+    "skipped": 0
+  },
+  "matches": []
+}

@@ -117,7 +117,8 @@ function buildApiUrl() {
   const baseUrl = String(process.env.FOOTBALL_DATA_BASE_URL || "https://api.football-data.org/v4").trim();
   const competitionCode = String(process.env.FOOTBALL_DATA_COMPETITION_CODE || "WC").trim();
   const season = String(process.env.FOOTBALL_DATA_SEASON || "2026").trim();
-  const status = String(process.env.FOOTBALL_DATA_STATUS || "FINISHED").trim();
+  const statusEnv = process.env.FOOTBALL_DATA_STATUS;
+  const status = statusEnv === undefined ? "FINISHED" : String(statusEnv).trim();
 
   const url = new URL(`${baseUrl.replace(/\/$/, "")}/competitions/${encodeURIComponent(competitionCode)}/matches`);
   url.searchParams.set("season", season);
@@ -127,9 +128,8 @@ function buildApiUrl() {
   return url.toString();
 }
 
-async function fetchFootballDataMatches() {
+async function fetchFootballDataMatches(endpoint) {
   const apiToken = requireEnv("FOOTBALL_DATA_API_TOKEN");
-  const endpoint = buildApiUrl();
 
   const response = await fetch(endpoint, {
     headers: {
@@ -148,6 +148,37 @@ async function fetchFootballDataMatches() {
   }
 
   return data.matches;
+}
+
+async function fetchMatchesWithFallback() {
+  const endpoint = buildApiUrl();
+  const matches = await fetchFootballDataMatches(endpoint);
+
+  const statusParam = new URL(endpoint).searchParams.get("status") || "";
+  if (matches.length > 0 || statusParam.toUpperCase() !== "FINISHED") {
+    return {
+      matches,
+      queryMeta: {
+        endpoint,
+        statusUsed: statusParam || null,
+        fallbackApplied: false,
+      },
+    };
+  }
+
+  const fallbackUrl = new URL(endpoint);
+  fallbackUrl.searchParams.delete("status");
+  const fallbackMatches = await fetchFootballDataMatches(fallbackUrl.toString());
+
+  return {
+    matches: fallbackMatches,
+    queryMeta: {
+      endpoint: fallbackUrl.toString(),
+      statusUsed: null,
+      fallbackApplied: true,
+      previousEndpoint: endpoint,
+    },
+  };
 }
 
 function toNumber(value) {
@@ -220,7 +251,7 @@ async function updateGist(content) {
 }
 
 async function main() {
-  const rawMatches = await fetchFootballDataMatches();
+  const { matches: rawMatches, queryMeta } = await fetchMatchesWithFallback();
   const { transformed, skipped } = transformMatches(rawMatches);
 
   const output = {
@@ -231,12 +262,18 @@ async function main() {
       fetched: rawMatches.length,
       included: transformed.length,
       skipped: skipped.length,
+      statusFilter: queryMeta.statusUsed,
+      fallbackApplied: queryMeta.fallbackApplied,
     },
     matches: transformed,
   };
 
   await updateGist(output);
 
+  console.log(`Endpoint used: ${queryMeta.endpoint}`);
+  if (queryMeta.fallbackApplied) {
+    console.log("Fallback applied: FINISHED returned 0, retried without status filter.");
+  }
   console.log(`Updated gist with ${transformed.length} matches. Skipped: ${skipped.length}.`);
   if (skipped.length > 0) {
     console.log("Skipped teams not mapped to app IDs:");
