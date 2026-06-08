@@ -122,6 +122,13 @@ La app:
 
 No se escriben resultados en Firestore (`matches` y `system/sportsSync` ya no son necesarios para este flujo).
 
+### 3.1) Consulta de grupos durante la eleccion de plantilla
+
+En la pantalla de seleccion de equipos se agrego el boton `Ver grupos del mundial`.
+
+- Abre un panel responsive (movil/desktop) con los grupos para consulta rapida.
+- Permite revisar equipos y bombo sin salir del flujo de pick.
+
 ### 4) Automatizar Gist desde GitHub Actions
 
 Se agrego:

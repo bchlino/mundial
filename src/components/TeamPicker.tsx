@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../lib/AuthContext';
 import { db, OperationType, handleFirestoreError } from '../lib/firebase';
 import { doc, updateDoc, setDoc, getDoc, arrayUnion } from 'firebase/firestore';
-import { WORLD_CUP_TEAMS, Team } from '../lib/teams';
+import { WORLD_CUP_TEAMS, WORLD_CUP_GROUPS, Team } from '../lib/teams';
 import { motion, AnimatePresence } from 'motion/react';
-import { Info, CheckCircle2, ChevronRight, Trophy, Star } from 'lucide-react';
+import { Info, CheckCircle2, ChevronRight, Trophy, Star, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useLanguage } from '../lib/LanguageContext';
 
@@ -24,6 +24,7 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
   const [isLoadingExisting, setIsLoadingExisting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isGroupsOpen, setIsGroupsOpen] = useState(false);
 
   const pots: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
   const picksRevealAtDate = league.picksRevealAt?.toDate?.() ?? null;
@@ -227,16 +228,29 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
                 {tr('Cierre de seleccion', 'Selection lock')}: {picksRevealAtDate.toLocaleString()}
               </p>
             )}
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mt-2">
+              {tr('Consulta grupos sin salir del pick.', 'Check groups without leaving the picker.')}
+            </p>
           </div>
-          {nextPendingPot && (
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => setCurrentPot(nextPendingPot)}
-              className="border-2 border-black px-4 py-2 text-xs font-black uppercase tracking-wider hover:bg-black hover:text-white transition-colors"
+              onClick={() => setIsGroupsOpen(true)}
+              className="border-2 border-black px-4 py-2 text-xs font-black uppercase tracking-wider bg-[#F5F2ED] hover:bg-black hover:text-white transition-colors flex items-center gap-2"
             >
-              {tr('Ir al siguiente pendiente', 'Go to next pending')}: {nextPendingPot}
+              <Info className="w-4 h-4" />
+              {tr('Ver grupos del mundial', 'View world cup groups')}
             </button>
-          )}
+            {nextPendingPot && (
+              <button
+                type="button"
+                onClick={() => setCurrentPot(nextPendingPot)}
+                className="border-2 border-black px-4 py-2 text-xs font-black uppercase tracking-wider hover:bg-black hover:text-white transition-colors"
+              >
+                {tr('Ir al siguiente pendiente', 'Go to next pending')}: {nextPendingPot}
+              </button>
+            )}
+          </div>
         </div>
         <div className="mt-4 h-3 border-2 border-black bg-[#F5F2ED]">
           <div className="h-full bg-[#FF3E00] transition-all duration-300" style={{ width: `${completion}%` }} />
@@ -340,6 +354,85 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
       </div>
 
       <AnimatePresence>
+        {isGroupsOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-black/60 p-3 sm:p-6"
+            onClick={() => setIsGroupsOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 24 }}
+              transition={{ duration: 0.2 }}
+              className="mx-auto h-full max-w-5xl bg-white border-4 border-black flex flex-col"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="border-b-2 border-black p-4 sm:p-5 flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-60">{tr('Consulta rapida', 'Quick lookup')}</p>
+                  <h3 className="text-xl sm:text-2xl font-serif italic font-black uppercase">{tr('Grupos del mundial', 'World cup groups')}</h3>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mt-2">
+                    {tr('Referencia de grupos para elegir mejor tu plantilla.', 'Group reference to help you choose your squad.')}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsGroupsOpen(false)}
+                  className="border-2 border-black px-3 py-2 text-xs font-black uppercase tracking-wider hover:bg-black hover:text-white transition-colors flex items-center gap-2"
+                >
+                  <X className="w-4 h-4" />
+                  {tr('Cerrar', 'Close')}
+                </button>
+              </div>
+
+              <div className="p-3 sm:p-5 overflow-y-auto">
+                <div className="mb-4 border-2 border-black bg-[#FFF0E8] px-3 py-2">
+                  <p className="text-[10px] font-black uppercase tracking-widest">
+                    {tr('Resaltado actual', 'Current highlight')}: {tr('Bombo', 'Pot')} {currentPot}
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+                  {WORLD_CUP_GROUPS.map((group) => (
+                    <article key={group.id} className="border-2 border-black bg-[#F5F2ED] p-3 sm:p-4">
+                      <div className="flex items-center justify-between mb-3 border-b border-black/20 pb-2">
+                        <p className="text-[10px] font-black uppercase tracking-widest opacity-60">{tr('Grupo', 'Group')}</p>
+                        <p className="text-2xl font-serif italic font-black">{group.id}</p>
+                      </div>
+                      <ul className="space-y-2">
+                        {group.teams.map((team) => (
+                          <li
+                            key={team.id}
+                            className={cn(
+                              'flex items-center justify-between border px-3 py-2',
+                              team.pot === currentPot
+                                ? 'border-black bg-[#FF3E00] text-white'
+                                : 'border-black/20 bg-white'
+                            )}
+                          >
+                            <span className="text-sm font-black uppercase tracking-wide flex items-center gap-2">
+                              <span className="text-lg">{team.flag}</span>
+                              {team.name}
+                            </span>
+                            <span className={cn(
+                              'text-[10px] font-black uppercase tracking-wider',
+                              team.pot === currentPot ? 'opacity-100' : 'opacity-60'
+                            )}>
+                              {tr('Bombo', 'Pot')} {team.pot}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
         {allSelected && (
           <motion.div 
             initial={{ opacity: 0, y: 50 }}

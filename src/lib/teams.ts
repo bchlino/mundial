@@ -5,6 +5,11 @@ export interface Team {
   pot: 'A' | 'B' | 'C' | 'D';
 }
 
+export interface WorldCupGroup {
+  id: string;
+  teams: Team[];
+}
+
 export const WORLD_CUP_TEAMS: Team[] = [
   // Pot A - Elite
   { id: 'argentina', name: 'Argentina', flag: '🇦🇷', pot: 'A' },
@@ -62,3 +67,22 @@ export const WORLD_CUP_TEAMS: Team[] = [
   { id: 'curacao', name: 'Curazao', flag: '🇨🇼', pot: 'D' },
   { id: 'new-zealand', name: 'Nueva Zelanda', flag: '🇳🇿', pot: 'D' },
 ];
+
+const GROUP_IDS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+
+const teamsByPot: Record<'A' | 'B' | 'C' | 'D', Team[]> = {
+  A: WORLD_CUP_TEAMS.filter((team) => team.pot === 'A'),
+  B: WORLD_CUP_TEAMS.filter((team) => team.pot === 'B'),
+  C: WORLD_CUP_TEAMS.filter((team) => team.pot === 'C'),
+  D: WORLD_CUP_TEAMS.filter((team) => team.pot === 'D'),
+};
+
+export const WORLD_CUP_GROUPS: WorldCupGroup[] = GROUP_IDS.map((groupId, index) => ({
+  id: groupId,
+  teams: [
+    teamsByPot.A[index],
+    teamsByPot.B[index],
+    teamsByPot.C[index],
+    teamsByPot.D[index],
+  ].filter(Boolean),
+}));
