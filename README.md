@@ -45,5 +45,97 @@ Vercel hosts your frontend, but Firestore security rules are enforced in Firebas
    - npx -y firebase-tools login
    - npx -y firebase-tools deploy --only firestore --project gen-lang-client-0384172144
 
-If you still get permission-denied, verify the authenticated user UID is the same adminId used when creating match documents.
+## Resultados via GitHub Gist (sin guardar en Firestore)
+
+Flujo implementado:
+
+GitHub Gist JSON
+   -> Frontend
+
+### 1) Crear o elegir un Gist
+
+Puedes usar un Gist propio o uno publico de terceros.
+
+Recomendado: Gist propio para controlar formato y disponibilidad.
+
+Formato JSON compatible:
+
+```json
+{
+   "updatedAt": "2026-06-08T12:00:00Z",
+   "source": "manual",
+   "matches": [
+      {
+         "id": "wc-2026-001",
+         "homeTeam": "argentina",
+         "awayTeam": "france",
+         "homeGoals": 2,
+         "awayGoals": 1,
+         "stage": "final",
+         "finished": true
+      }
+   ]
+}
+```
+
+Tambien se acepta un array plano de partidos como raiz del JSON.
+
+### 2) Configurar variables de entorno en frontend
+
+Agregar en `.env.local` (o en Vercel):
+
+- VITE_RESULTS_GIST_URL=https://gist.githubusercontent.com/USER/GIST_ID/raw/FILE.json
+- VITE_RESULTS_REFRESH_MS=300000
+
+Notas:
+
+- `VITE_RESULTS_GIST_URL` es obligatoria.
+- `VITE_RESULTS_REFRESH_MS` es opcional (en milisegundos). Default: 300000 (5 min).
+
+### 3) Uso desde frontend admin
+
+En resultados admin existe el boton "Actualizar resultados desde Gist".
+
+La app:
+
+- lee el JSON del Gist,
+- normaliza campos de marcador/fase,
+- muestra tabla y usa esos partidos para calcular puntajes.
+
+No se escriben resultados en Firestore (`matches` y `system/sportsSync` ya no son necesarios para este flujo).
+
+### 4) Automatizar Gist desde GitHub Actions
+
+Se agrego:
+
+- Script: `scripts/update-worldcup-gist.mjs`
+- Workflow: `.github/workflows/update-worldcup.yml`
+
+#### Secrets requeridos (GitHub repo)
+
+- `FOOTBALL_DATA_API_TOKEN`: token de football-data.org v4.
+- `GIST_ID`: id del gist donde se publica el JSON.
+- `GIST_TOKEN`: token de GitHub con permiso para editar gists.
+
+#### Variables opcionales (GitHub repo -> Variables)
+
+- `FOOTBALL_DATA_BASE_URL` (default: `https://api.football-data.org/v4`)
+- `FOOTBALL_DATA_COMPETITION_CODE` (default: `WC`)
+- `FOOTBALL_DATA_SEASON` (default: `2026`)
+- `FOOTBALL_DATA_STATUS` (default: `FINISHED`)
+- `GIST_FILE_NAME` (default: `matches.json`)
+- `RESULTS_SOURCE_NAME` (default: `football-data.org`)
+
+#### Ejecutar manualmente
+
+- En GitHub: Actions -> `Update World Cup Gist` -> Run workflow.
+- En local: `npm run results:update-gist` (con variables de entorno cargadas).
+
+#### Consumir desde Vercel
+
+En Vercel deja configurado:
+
+- `VITE_RESULTS_GIST_URL` apuntando al raw del archivo del gist (ejemplo: `https://gist.githubusercontent.com/USER/GIST_ID/raw/matches.json`).
+
+Con eso el frontend cargara los resultados sin usar Firestore para matches.
 

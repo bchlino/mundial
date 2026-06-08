@@ -4,6 +4,7 @@ import { db, OperationType, handleFirestoreError } from '../lib/firebase';
 import { doc, onSnapshot, collection, getDoc, updateDoc } from 'firebase/firestore';
 import { WORLD_CUP_TEAMS, Team } from '../lib/teams';
 import { MatchResult, getMatchPoints } from '../lib/results';
+import { fetchResultsFromGist } from '../lib/resultsSource';
 import { motion } from 'motion/react';
 import { Trophy, Star, Users, LayoutGrid, Info, ShieldCheck } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -25,45 +26,41 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
   const [users, setUsers] = useState<Record<string, any>>({});
    const [view, setView] = useState<'grid' | 'table'>('grid');
    const [results, setResults] = useState<MatchResult[]>([]);
-   const normalizeStage = (stage: any): MatchResult['stage'] => {
-      if (stage === 'round_of_16') return 'round16';
-      if (stage === 'quarterfinals') return 'quarters';
-      if (stage === 'semifinals') return 'semis';
-      if (stage === 'groups' || stage === 'round16' || stage === 'quarters' || stage === 'semis' || stage === 'final') return stage;
-      return 'groups';
-   };
+   const [resultsLoadError, setResultsLoadError] = useState<string | null>(null);
 
-   // Leer resultados de partidos solo con usuario autenticado
+   // Resultados oficiales desde gist (sin dependencia de /matches en Firestore)
    useEffect(() => {
-      if (!user?.uid) {
-         setResults([]);
-         return;
-      }
+      let isMounted = true;
+      const refreshMs = Number(import.meta.env.VITE_RESULTS_REFRESH_MS || 300000);
 
-      const unsub = onSnapshot(collection(db, 'matches'), (snap) => {
-         const arr: MatchResult[] = [];
-         snap.forEach(doc => {
-            const data = doc.data() as any;
-            arr.push({
-              id: doc.id,
-              homeTeam: data.homeTeam,
-              awayTeam: data.awayTeam,
-              homeGoals: typeof data.homeGoals === 'number' ? data.homeGoals : Number(data.homeScore || 0),
-              awayGoals: typeof data.awayGoals === 'number' ? data.awayGoals : Number(data.awayScore || 0),
-              stage: normalizeStage(data.stage),
-              finished: typeof data.finished === 'boolean' ? data.finished : true,
-            });
-         });
-         setResults(arr);
-      }, (error) => {
-         console.error('Matches snapshot permission error:', {
-            code: (error as any)?.code,
-            message: (error as any)?.message,
-            uid: user?.uid,
-         });
-      });
-      return () => unsub();
-   }, [user?.uid]);
+      const loadResults = async () => {
+         try {
+            const { matches } = await fetchResultsFromGist();
+            if (!isMounted) return;
+            setResults(matches);
+            setResultsLoadError(null);
+         } catch (error) {
+            if (!isMounted) return;
+            console.error('Failed to load gist results:', error);
+            setResults([]);
+            setResultsLoadError(tr('No se pudieron cargar los resultados del Gist.', 'Could not load results from Gist.'));
+         }
+      };
+
+      void loadResults();
+      const timer = Number.isFinite(refreshMs) && refreshMs > 0
+        ? window.setInterval(() => {
+            void loadResults();
+          }, refreshMs)
+        : null;
+
+      return () => {
+         isMounted = false;
+         if (timer) {
+            window.clearInterval(timer);
+         }
+      };
+   }, [tr]);
 
   useEffect(() => {
     const unsubPicks = onSnapshot(collection(db, 'leagues', league.id, 'picks'), (snap) => {
@@ -269,6 +266,11 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                    <p className="mt-2 text-[10px] font-black uppercase tracking-widest opacity-60">
                       {tr('Jugadores con plantilla completa', 'Players with complete squad')}: {participantsReadyCount}/{league.participants.length}
                    </p>
+                   {resultsLoadError && (
+                      <p className="mt-2 text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">
+                         {resultsLoadError}
+                      </p>
+                   )}
                 </div>
              )}
 

@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getFunctions } from 'firebase/functions';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const envConfig = {
@@ -23,6 +24,7 @@ const app = initializeApp(runtimeConfig);
 export const db = runtimeConfig.firestoreDatabaseId
   ? getFirestore(app, runtimeConfig.firestoreDatabaseId)
   : getFirestore(app);
+export const functions = getFunctions(app, import.meta.env.VITE_FIREBASE_FUNCTIONS_REGION || 'us-central1');
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 

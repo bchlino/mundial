@@ -9,6 +9,10 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
+    "functions:install": "npm --prefix functions install",
+    "functions:serve": "npm --prefix functions run serve",
+    "results:update-gist": "node scripts/update-worldcup-gist.mjs",
+    "firebase:functions:deploy": "npx -y firebase-tools deploy --only functions --project gen-lang-client-0384172144",
     "firebase:login": "npx -y firebase-tools login",
     "firebase:rules:deploy": "npx -y firebase-tools deploy --only firestore --project gen-lang-client-0384172144"
   },

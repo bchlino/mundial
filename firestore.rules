@@ -143,8 +143,13 @@ service cloud.firestore {
     // Match Results (Global)
     match /matches/{matchId} {
       allow read: if isSignedIn();
-      allow create: if isSignedIn() && (debugMode() || incoming().adminId == request.auth.uid);
-      allow update, delete: if isSignedIn() && (debugMode() || existing().adminId == request.auth.uid);
+      allow write: if false;
+    }
+
+    // Sync metadata written by Cloud Functions
+    match /system/{docId} {
+      allow read: if isSignedIn();
+      allow write: if false;
     }
   }
 }

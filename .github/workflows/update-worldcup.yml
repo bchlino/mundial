@@ -1,0 +1,31 @@
+name: Update World Cup Gist
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/30 * * * *"
+
+jobs:
+  update-gist:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run updater
+        env:
+          FOOTBALL_DATA_API_TOKEN: ${{ secrets.FOOTBALL_DATA_API_TOKEN }}
+          GIST_ID: ${{ secrets.GIST_ID }}
+          GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
+          FOOTBALL_DATA_BASE_URL: ${{ vars.FOOTBALL_DATA_BASE_URL }}
+          FOOTBALL_DATA_COMPETITION_CODE: ${{ vars.FOOTBALL_DATA_COMPETITION_CODE }}
+          FOOTBALL_DATA_SEASON: ${{ vars.FOOTBALL_DATA_SEASON }}
+          FOOTBALL_DATA_STATUS: ${{ vars.FOOTBALL_DATA_STATUS }}
+          GIST_FILE_NAME: ${{ vars.GIST_FILE_NAME }}
+          RESULTS_SOURCE_NAME: ${{ vars.RESULTS_SOURCE_NAME }}
+        run: node scripts/update-worldcup-gist.mjs
