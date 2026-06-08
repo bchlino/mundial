@@ -128,6 +128,8 @@ En la pantalla de seleccion de equipos se agrego el boton `Ver grupos del mundia
 
 - Abre un panel responsive (movil/desktop) con los grupos para consulta rapida.
 - Permite revisar equipos y bombo sin salir del flujo de pick.
+- Los grupos mostrados se alinean con la publicacion oficial de FIFA para 2026.
+- El acceso `Ver grupos` tambien esta como boton flotante para consulta inmediata durante la seleccion.
 
 ### 4) Automatizar Gist desde GitHub Actions
 

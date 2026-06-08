@@ -433,22 +433,33 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
           </motion.div>
         )}
 
-        {allSelected && (
-          <motion.div 
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="fixed bottom-4 left-0 right-0 px-4 flex justify-center z-50"
-          >
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-auto z-50"
+        >
+          <div className="flex items-center justify-end gap-2 sm:gap-3">
             <button
-              onClick={handleFinalize}
-              disabled={isSubmitting || isSelectionLocked || isLoadingExisting}
-              className="w-full max-w-xl bg-black text-white px-5 sm:px-12 py-4 sm:py-8 text-base sm:text-3xl font-serif italic font-black uppercase tracking-tight sm:tracking-tighter border-4 sm:border-8 border-white shadow-[12px_12px_0px_0px_rgba(255,62,0,1)] sm:shadow-[24px_24px_0px_0px_rgba(255,62,0,1)] hover:bg-[#FF3E00] transition-all flex items-center justify-center gap-3 sm:gap-8 group"
+              type="button"
+              onClick={() => setIsGroupsOpen(true)}
+              className="bg-[#FF3E00] text-white px-4 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm font-black uppercase tracking-wider border-4 border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:bg-black transition-colors flex items-center gap-2"
             >
-              {isSubmitting ? tr('Sincronizando...', 'Syncing...') : tr('Guardar seleccion', 'Save selection')}
-              <Trophy className="w-6 h-6 sm:w-10 sm:h-10 group-hover:rotate-12 transition-transform" />
+              <Info className="w-4 h-4" />
+              {tr('Ver grupos', 'View groups')}
             </button>
-          </motion.div>
-        )}
+
+            {allSelected && (
+              <button
+                onClick={handleFinalize}
+                disabled={isSubmitting || isSelectionLocked || isLoadingExisting}
+                className="bg-black text-white px-4 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm font-black uppercase tracking-wider border-4 border-white shadow-[8px_8px_0px_0px_rgba(255,62,0,1)] hover:bg-[#FF3E00] transition-colors flex items-center gap-2 disabled:opacity-60"
+              >
+                {isSubmitting ? tr('Guardando...', 'Saving...') : tr('Guardar seleccion', 'Save selection')}
+                <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+            )}
+          </div>
+        </motion.div>
       </AnimatePresence>
     </div>
   );

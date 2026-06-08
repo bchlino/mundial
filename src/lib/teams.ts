@@ -68,21 +68,24 @@ export const WORLD_CUP_TEAMS: Team[] = [
   { id: 'new-zealand', name: 'Nueva Zelanda', flag: '🇳🇿', pot: 'D' },
 ];
 
-const GROUP_IDS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+const OFFICIAL_GROUP_TEAM_IDS: Array<{ id: string; teamIds: string[] }> = [
+  { id: 'A', teamIds: ['mexico', 'south-africa', 'south-korea', 'czech-republic'] },
+  { id: 'B', teamIds: ['canada', 'bosnia', 'qatar', 'switzerland'] },
+  { id: 'C', teamIds: ['brazil', 'morocco', 'haiti', 'scotland'] },
+  { id: 'D', teamIds: ['usa', 'paraguay', 'australia', 'turkey'] },
+  { id: 'E', teamIds: ['germany', 'curacao', 'cote-divoire', 'ecuador'] },
+  { id: 'F', teamIds: ['netherlands', 'japan', 'sweden', 'tunisia'] },
+  { id: 'G', teamIds: ['belgium', 'egypt', 'iran', 'new-zealand'] },
+  { id: 'H', teamIds: ['spain', 'cape-verde', 'saudi-arabia', 'uruguay'] },
+  { id: 'I', teamIds: ['france', 'senegal', 'iraq', 'norway'] },
+  { id: 'J', teamIds: ['argentina', 'algeria', 'austria', 'jordan'] },
+  { id: 'K', teamIds: ['portugal', 'rd-congo', 'uzbekistan', 'colombia'] },
+  { id: 'L', teamIds: ['england', 'croatia', 'ghana', 'panama'] },
+];
 
-const teamsByPot: Record<'A' | 'B' | 'C' | 'D', Team[]> = {
-  A: WORLD_CUP_TEAMS.filter((team) => team.pot === 'A'),
-  B: WORLD_CUP_TEAMS.filter((team) => team.pot === 'B'),
-  C: WORLD_CUP_TEAMS.filter((team) => team.pot === 'C'),
-  D: WORLD_CUP_TEAMS.filter((team) => team.pot === 'D'),
-};
-
-export const WORLD_CUP_GROUPS: WorldCupGroup[] = GROUP_IDS.map((groupId, index) => ({
-  id: groupId,
-  teams: [
-    teamsByPot.A[index],
-    teamsByPot.B[index],
-    teamsByPot.C[index],
-    teamsByPot.D[index],
-  ].filter(Boolean),
+export const WORLD_CUP_GROUPS: WorldCupGroup[] = OFFICIAL_GROUP_TEAM_IDS.map((group) => ({
+  id: group.id,
+  teams: group.teamIds
+    .map((teamId) => WORLD_CUP_TEAMS.find((team) => team.id === teamId))
+    .filter(Boolean) as Team[],
 }));
