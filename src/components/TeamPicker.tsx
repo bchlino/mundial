@@ -104,7 +104,7 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
     });
   };
 
-  const handleSetTapado = (teamId: string) => {
+  const handleSetTapado = async (teamId: string) => {
     if (isSelectionLocked) {
       setErrorMessage(tr('La seleccion ya esta cerrada para esta liga.', 'Selection is already locked for this league.'));
       return;
@@ -112,7 +112,31 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
 
     setStatusMessage(null);
     setErrorMessage(null);
-    setTapadoId((prev) => (prev === teamId ? null : teamId));
+    const nextTapadoId = tapadoId === teamId ? null : teamId;
+    setTapadoId(nextTapadoId);
+
+    if (!user || Object.keys(selections).length < 4) {
+      return;
+    }
+
+    try {
+      const teamIds = pots.map((pot) => selections[pot]).filter(Boolean);
+      await setDoc(doc(db, 'leagues', league.id, 'picks', user.uid), {
+        userId: user.uid,
+        teamIds,
+        tapadoId: nextTapadoId,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+
+      await updateDoc(doc(db, 'leagues', league.id), {
+        participants: arrayUnion(user.uid)
+      });
+
+      setStatusMessage(tr('Tapado guardado. Puedes cambiarlo hasta la fecha limite.', 'Wildcard saved. You can change it until the deadline.'));
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, `leagues/${league.id}/picks/${user.uid}`);
+      setErrorMessage(tr('No se pudo guardar el tapado. Intentalo de nuevo.', 'Could not save wildcard. Please try again.'));
+    }
   };
 
   const handleFinalize = async () => {
@@ -289,7 +313,7 @@ export const TeamPicker: React.FC<{ league: LeagueData }> = ({ league }) => {
                 <button
                   key={team.id}
                   type="button"
-                  onClick={() => handleSetTapado(team.id)}
+                  onClick={() => void handleSetTapado(team.id)}
                   disabled={isSelectionLocked || isLoadingExisting}
                   className={cn(
                     'border-2 border-black px-4 py-3 text-left transition-colors',

@@ -143,6 +143,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
 
   const handleSetTapado = async (teamId: string) => {
     if (!user) return;
+      if (picksArePublished) return;
     try {
       await updateDoc(doc(db, 'leagues', league.id, 'picks', user.uid), {
         tapadoId: teamId
@@ -201,11 +202,11 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                    </div>
                  ) : (
                    <button 
-                     disabled={!!myPicks?.tapadoId}
+                               disabled={!!myPicks?.tapadoId || picksArePublished}
                      onClick={() => handleSetTapado(team.id)}
                      className={cn(
                        "w-full py-3 border-2 border-black text-[10px] font-black uppercase tracking-widest transition-all",
-                       !!myPicks?.tapadoId
+                                  !!myPicks?.tapadoId || picksArePublished
                         ? "hidden"
                         : "hover:bg-[#FF3E00] hover:text-white"
                      )}
@@ -281,9 +282,14 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                 const userPicks = picks[uid];
                 const isMe = uid === user?.uid;
                         const canViewTeams = isMe || !hideOpponentTeams;
-                        const teams = canViewTeams
-                           ? WORLD_CUP_TEAMS.filter(t => userPicks?.teamIds?.includes(t.id))
+                        const visibleTeamIds = canViewTeams
+                           ? (isMe || hideOpponentTeams || !userPicks?.tapadoId
+                              ? (userPicks?.teamIds || [])
+                              : (userPicks?.teamIds || []).filter((teamId: string) => teamId !== userPicks.tapadoId))
                            : [];
+                        const teams = WORLD_CUP_TEAMS.filter(t => visibleTeamIds.includes(t.id));
+                        const hasHiddenTapado = canViewTeams && !isMe && !hideOpponentTeams && !!userPicks?.tapadoId && (userPicks?.teamIds || []).includes(userPicks.tapadoId);
+                        const emptySlots = Math.max(0, 4 - teams.length - (hasHiddenTapado ? 1 : 0));
 
                 return (
                   <motion.div 
@@ -318,7 +324,12 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                                                 )}
                                            </div>
                                         ))}
-                                        {Array.from({ length: 4 - teams.length }).map((_, i) => (
+                                        {hasHiddenTapado && (
+                                           <div className="relative flex-1 h-12 border-2 border-dashed border-black/30 bg-black/5 flex items-center justify-center text-[10px] font-black uppercase tracking-widest opacity-70">
+                                              {tr('Tapado oculto', 'Hidden wildcard')}
+                                           </div>
+                                        )}
+                                        {Array.from({ length: emptySlots }).map((_, i) => (
                                            <div key={i} className="flex-1 h-12 bg-black/5 border-2 border-dashed border-black/10" />
                                         ))}
                                      </>
@@ -351,10 +362,19 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                                  const uid = entry.uid;
                       const userPicks = picks[uid];
                                  const isMe = uid === user?.uid;
-                      const tA = WORLD_CUP_TEAMS.find(t => t.pot === 'A' && userPicks?.teamIds?.includes(t.id));
-                      const tB = WORLD_CUP_TEAMS.find(t => t.pot === 'B' && userPicks?.teamIds?.includes(t.id));
-                      const tC = WORLD_CUP_TEAMS.find(t => t.pot === 'C' && userPicks?.teamIds?.includes(t.id));
-                      const tD = WORLD_CUP_TEAMS.find(t => t.pot === 'D' && userPicks?.teamIds?.includes(t.id));
+                                 const canViewTeams = isMe || !hideOpponentTeams;
+                                 const visibleTeamIds = canViewTeams
+                                    ? (isMe || hideOpponentTeams || !userPicks?.tapadoId
+                                          ? (userPicks?.teamIds || [])
+                                          : (userPicks?.teamIds || []).filter((teamId: string) => teamId !== userPicks.tapadoId))
+                                    : [];
+                                 const hiddenTapadoPot = !isMe && !hideOpponentTeams && userPicks?.tapadoId
+                                    ? WORLD_CUP_TEAMS.find(t => t.id === userPicks.tapadoId)?.pot
+                                    : null;
+                                 const tA = WORLD_CUP_TEAMS.find(t => t.pot === 'A' && visibleTeamIds.includes(t.id));
+                                 const tB = WORLD_CUP_TEAMS.find(t => t.pot === 'B' && visibleTeamIds.includes(t.id));
+                                 const tC = WORLD_CUP_TEAMS.find(t => t.pot === 'C' && visibleTeamIds.includes(t.id));
+                                 const tD = WORLD_CUP_TEAMS.find(t => t.pot === 'D' && visibleTeamIds.includes(t.id));
 
                       return (
                         <tr key={uid} className="hover:bg-[#F5F2ED] transition-colors group">
@@ -367,25 +387,25 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                            </td>
                            <td className="px-8 py-6">
                               <div className="flex items-center gap-2">
-                                 <span className="text-3xl">{isMe || !hideOpponentTeams ? (tA?.flag || '—') : '🔒'}</span>
+                                 <span className="text-3xl">{!canViewTeams ? '🔒' : (tA?.flag || (hiddenTapadoPot === 'A' ? '🕵️' : '—'))}</span>
                                  {isMe && userPicks?.tapadoId === tA?.id && <Star className="w-4 h-4 text-[#FF3E00] fill-current" />}
                               </div>
                            </td>
                            <td className="px-8 py-6">
                               <div className="flex items-center gap-2">
-                                 <span className="text-3xl">{isMe || !hideOpponentTeams ? (tB?.flag || '—') : '🔒'}</span>
+                                 <span className="text-3xl">{!canViewTeams ? '🔒' : (tB?.flag || (hiddenTapadoPot === 'B' ? '🕵️' : '—'))}</span>
                                  {isMe && userPicks?.tapadoId === tB?.id && <Star className="w-4 h-4 text-[#FF3E00] fill-current" />}
                               </div>
                            </td>
                            <td className="px-8 py-6">
                               <div className="flex items-center gap-2">
-                                 <span className="text-3xl">{isMe || !hideOpponentTeams ? (tC?.flag || '—') : '🔒'}</span>
+                                 <span className="text-3xl">{!canViewTeams ? '🔒' : (tC?.flag || (hiddenTapadoPot === 'C' ? '🕵️' : '—'))}</span>
                                  {isMe && userPicks?.tapadoId === tC?.id && <Star className="w-4 h-4 text-[#FF3E00] fill-current" />}
                               </div>
                            </td>
                            <td className="px-8 py-6">
                               <div className="flex items-center gap-2">
-                                 <span className="text-3xl">{isMe || !hideOpponentTeams ? (tD?.flag || '—') : '🔒'}</span>
+                                 <span className="text-3xl">{!canViewTeams ? '🔒' : (tD?.flag || (hiddenTapadoPot === 'D' ? '🕵️' : '—'))}</span>
                                  {isMe && userPicks?.tapadoId === tD?.id && <Star className="w-4 h-4 text-[#FF3E00] fill-current" />}
                               </div>
                            </td>
