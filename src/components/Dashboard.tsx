@@ -325,8 +325,8 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                                            </div>
                                         ))}
                                         {hasHiddenTapado && (
-                                           <div className="relative flex-1 h-12 border-2 border-dashed border-black/30 bg-black/5 flex items-center justify-center text-[10px] font-black uppercase tracking-widest opacity-70">
-                                              {tr('Tapado oculto', 'Hidden wildcard')}
+                                           <div className="relative flex-1 border-2 border-black p-2 bg-black flex items-center justify-center">
+                                              <Star className="w-5 h-5 text-[#FF3E00] fill-current" />
                                            </div>
                                         )}
                                         {Array.from({ length: emptySlots }).map((_, i) => (
