@@ -6,7 +6,7 @@ import { WORLD_CUP_TEAMS, Team } from '../lib/teams';
 import { MatchResult, getMatchPoints } from '../lib/results';
 import { fetchResultsFromGist } from '../lib/resultsSource';
 import { motion } from 'motion/react';
-import { Trophy, Star, Users, LayoutGrid, Info, ShieldCheck } from 'lucide-react';
+import { Trophy, Star, Users, LayoutGrid, Info, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useLanguage } from '../lib/LanguageContext';
 
@@ -27,6 +27,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
    const [view, setView] = useState<'grid' | 'table'>('grid');
    const [results, setResults] = useState<MatchResult[]>([]);
    const [resultsLoadError, setResultsLoadError] = useState<string | null>(null);
+   const [showMySquad, setShowMySquad] = useState(true);
 
    // Resultados oficiales desde gist (sin dependencia de /matches en Firestore)
    useEffect(() => {
@@ -162,14 +163,26 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
               <h2 className="text-4xl sm:text-6xl font-serif font-black italic uppercase tracking-tighter">Mi Plantilla</h2>
               <p className="text-xs font-black uppercase tracking-[0.4em] opacity-40 hidden sm:block">{tr('Seleccion confirmada', 'Confirmed selection')}</p>
            </div>
-           
-           {!myPicks?.tapadoId && myTeams.length === 4 && (
-             <div className="bg-[#FF3E00] text-white px-4 py-2 text-[10px] font-black uppercase tracking-widest animate-pulse">
-                        {tr('Seleccion pendiente: marca tu tapado', 'Selection pending: mark your wildcard')} ⭐
-             </div>
-           )}
+
+           <div className="flex items-center gap-3 flex-wrap">
+              <button
+                 type="button"
+                 onClick={() => setShowMySquad((prev) => !prev)}
+                 className="inline-flex items-center gap-2 border-2 border-black px-4 py-2 text-[10px] font-black uppercase tracking-widest bg-white hover:bg-black hover:text-white transition-colors"
+              >
+                 {showMySquad ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                 {showMySquad ? tr('Ocultar plantilla', 'Hide squad') : tr('Mostrar plantilla', 'Show squad')}
+              </button>
+
+              {!myPicks?.tapadoId && myTeams.length === 4 && (
+                <div className="bg-[#FF3E00] text-white px-4 py-2 text-[10px] font-black uppercase tracking-widest animate-pulse">
+                           {tr('Seleccion pendiente: marca tu tapado', 'Selection pending: mark your wildcard')} ⭐
+                </div>
+              )}
+           </div>
         </div>
 
+        {showMySquad ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 sm:gap-8">
            {myTeams.map(team => (
              <motion.div 
@@ -233,6 +246,19 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
              </div>
            ))}
         </div>
+        ) : (
+           <div className="border-4 border-black bg-[#F5F2ED] p-8 sm:p-10 text-center">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-3">
+                 {tr('Vista protegida', 'Protected view')}
+              </p>
+              <p className="text-2xl sm:text-3xl font-serif italic font-black uppercase leading-tight">
+                 {tr('Tu plantilla esta oculta', 'Your squad is hidden')}
+              </p>
+              <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mt-3">
+                 {tr('Pulsa mostrar plantilla cuando quieras verla de nuevo.', 'Press show squad whenever you want to see it again.')}
+              </p>
+           </div>
+        )}
       </section>
 
       {/* Participants Feed */}
@@ -283,12 +309,10 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                 const isMe = uid === user?.uid;
                         const canViewTeams = isMe || !hideOpponentTeams;
                         const visibleTeamIds = canViewTeams
-                           ? (isMe || hideOpponentTeams || !userPicks?.tapadoId
-                              ? (userPicks?.teamIds || [])
-                              : (userPicks?.teamIds || []).filter((teamId: string) => teamId !== userPicks.tapadoId))
+                           ? (userPicks?.teamIds || []).filter((teamId: string) => teamId !== userPicks?.tapadoId)
                            : [];
                         const teams = WORLD_CUP_TEAMS.filter(t => visibleTeamIds.includes(t.id));
-                        const hasHiddenTapado = canViewTeams && !isMe && !hideOpponentTeams && !!userPicks?.tapadoId && (userPicks?.teamIds || []).includes(userPicks.tapadoId);
+                        const hasHiddenTapado = canViewTeams && !!userPicks?.tapadoId && (userPicks?.teamIds || []).includes(userPicks.tapadoId);
                         const emptySlots = Math.max(0, 4 - teams.length - (hasHiddenTapado ? 1 : 0));
 
                 return (
@@ -319,9 +343,6 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                                         {teams.map(t => (
                                            <div key={t.id} className="relative group cursor-help border-2 border-black p-2 bg-[#F5F2ED] flex-1 flex items-center justify-center">
                                                 <span className="text-3xl transition-all">{t.flag}</span>
-                                                {isMe && userPicks?.tapadoId === t.id && (
-                                                   <Star className="absolute -top-2 -right-2 w-4 h-4 text-[#FF3E00] fill-current" />
-                                                )}
                                            </div>
                                         ))}
                                         {hasHiddenTapado && (
@@ -364,11 +385,9 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                                  const isMe = uid === user?.uid;
                                  const canViewTeams = isMe || !hideOpponentTeams;
                                  const visibleTeamIds = canViewTeams
-                                    ? (isMe || hideOpponentTeams || !userPicks?.tapadoId
-                                          ? (userPicks?.teamIds || [])
-                                          : (userPicks?.teamIds || []).filter((teamId: string) => teamId !== userPicks.tapadoId))
+                                    ? (userPicks?.teamIds || []).filter((teamId: string) => teamId !== userPicks?.tapadoId)
                                     : [];
-                                 const hiddenTapadoPot = !isMe && !hideOpponentTeams && userPicks?.tapadoId
+                                 const hiddenTapadoPot = canViewTeams && userPicks?.tapadoId
                                     ? WORLD_CUP_TEAMS.find(t => t.id === userPicks.tapadoId)?.pot
                                     : null;
                                  const tA = WORLD_CUP_TEAMS.find(t => t.pot === 'A' && visibleTeamIds.includes(t.id));
@@ -388,25 +407,21 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                            <td className="px-8 py-6">
                               <div className="flex items-center gap-2">
                                  <span className="text-3xl">{!canViewTeams ? '🔒' : (tA?.flag || (hiddenTapadoPot === 'A' ? '🕵️' : '—'))}</span>
-                                 {isMe && userPicks?.tapadoId === tA?.id && <Star className="w-4 h-4 text-[#FF3E00] fill-current" />}
                               </div>
                            </td>
                            <td className="px-8 py-6">
                               <div className="flex items-center gap-2">
                                  <span className="text-3xl">{!canViewTeams ? '🔒' : (tB?.flag || (hiddenTapadoPot === 'B' ? '🕵️' : '—'))}</span>
-                                 {isMe && userPicks?.tapadoId === tB?.id && <Star className="w-4 h-4 text-[#FF3E00] fill-current" />}
                               </div>
                            </td>
                            <td className="px-8 py-6">
                               <div className="flex items-center gap-2">
                                  <span className="text-3xl">{!canViewTeams ? '🔒' : (tC?.flag || (hiddenTapadoPot === 'C' ? '🕵️' : '—'))}</span>
-                                 {isMe && userPicks?.tapadoId === tC?.id && <Star className="w-4 h-4 text-[#FF3E00] fill-current" />}
                               </div>
                            </td>
                            <td className="px-8 py-6">
                               <div className="flex items-center gap-2">
                                  <span className="text-3xl">{!canViewTeams ? '🔒' : (tD?.flag || (hiddenTapadoPot === 'D' ? '🕵️' : '—'))}</span>
-                                 {isMe && userPicks?.tapadoId === tD?.id && <Star className="w-4 h-4 text-[#FF3E00] fill-current" />}
                               </div>
                            </td>
                            <td className="px-8 py-6 text-right">
