@@ -84,6 +84,9 @@ const TEAM_ALIASES = {
   arabiasaudita: "saudi-arabia",
   iraq: "iraq",
   uzbekistan: "uzbekistan",
+  jordan: "jordan",
+  jordania: "jordan",
+  hashemitekingdomofjordan: "jordan",
 
   // NUEVOS
   capeverde: "cape-verde",
