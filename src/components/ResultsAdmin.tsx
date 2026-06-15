@@ -20,6 +20,7 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [gistUrl, setGistUrl] = useState<string | null>(null);
+  const [showOfficialResultsTable, setShowOfficialResultsTable] = useState(false);
 
   const loadMatches = useCallback(async (showStatus: boolean) => {
     setStatusMessage(null);
@@ -147,37 +148,58 @@ const ResultsAdmin: React.FC<ResultsAdminProps> = ({ adminUid }) => {
         {errorMessage && <p className="md:col-span-2 text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{errorMessage}</p>}
       </div>
 
-      <div className="mt-6 border-2 border-black overflow-x-auto">
-        <table className="w-full min-w-190 text-left">
-          <thead className="bg-black text-white text-[10px] font-black uppercase tracking-[0.2em]">
-            <tr>
-              <th className="px-4 py-3">Partido</th>
-              <th className="px-4 py-3">{tr('Fase', 'Stage')}</th>
-              <th className="px-4 py-3">{tr('Resultado', 'Result')}</th>
-              <th className="px-4 py-3">{tr('Estado', 'Status')}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-black/10 bg-white">
-            {matches.length === 0 ? (
-              <tr>
-                <td className="px-4 py-4 text-xs font-black uppercase tracking-widest opacity-50" colSpan={4}>
-                  {tr('No hay resultados cargados aun.', 'No results yet.')}
-                </td>
-              </tr>
-            ) : (
-              matches.map((match) => (
-                <tr key={match.id} className="hover:bg-[#F5F2ED]">
-                  <td className="px-4 py-3 text-xs font-black uppercase tracking-wider">
-                    {getTeamLabel(match.homeTeam)} vs {getTeamLabel(match.awayTeam)}
-                  </td>
-                  <td className="px-4 py-3 text-xs font-black uppercase tracking-wider">{getStageLabel(match.stage)}</td>
-                  <td className="px-4 py-3 text-xs font-black uppercase tracking-wider">{match.homeGoals} - {match.awayGoals}</td>
-                  <td className="px-4 py-3 text-xs font-black uppercase tracking-wider">{match.finished ? tr('Finalizado', 'Finished') : tr('Pendiente', 'Pending')}</td>
+      <div className="mt-6 border-2 border-black bg-white">
+        <div className="flex items-center justify-between gap-3 p-3 border-b-2 border-black">
+          <p className="text-[10px] font-black uppercase tracking-widest opacity-70">
+            {tr('Tabla de resultados', 'Results table')} ({matches.length})
+          </p>
+          <button
+            type="button"
+            onClick={() => setShowOfficialResultsTable((prev) => !prev)}
+            className="px-4 py-2 border-2 border-black text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-colors"
+          >
+            {showOfficialResultsTable ? tr('Cerrar tabla', 'Collapse table') : tr('Expandir tabla', 'Expand table')}
+          </button>
+        </div>
+
+        {showOfficialResultsTable ? (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-190 text-left">
+              <thead className="bg-black text-white text-[10px] font-black uppercase tracking-[0.2em]">
+                <tr>
+                  <th className="px-4 py-3">Partido</th>
+                  <th className="px-4 py-3">{tr('Fase', 'Stage')}</th>
+                  <th className="px-4 py-3">{tr('Resultado', 'Result')}</th>
+                  <th className="px-4 py-3">{tr('Estado', 'Status')}</th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              </thead>
+              <tbody className="divide-y divide-black/10 bg-white">
+                {matches.length === 0 ? (
+                  <tr>
+                    <td className="px-4 py-4 text-xs font-black uppercase tracking-widest opacity-50" colSpan={4}>
+                      {tr('No hay resultados cargados aun.', 'No results yet.')}
+                    </td>
+                  </tr>
+                ) : (
+                  matches.map((match) => (
+                    <tr key={match.id} className="hover:bg-[#F5F2ED]">
+                      <td className="px-4 py-3 text-xs font-black uppercase tracking-wider">
+                        {getTeamLabel(match.homeTeam)} vs {getTeamLabel(match.awayTeam)}
+                      </td>
+                      <td className="px-4 py-3 text-xs font-black uppercase tracking-wider">{getStageLabel(match.stage)}</td>
+                      <td className="px-4 py-3 text-xs font-black uppercase tracking-wider">{match.homeGoals} - {match.awayGoals}</td>
+                      <td className="px-4 py-3 text-xs font-black uppercase tracking-wider">{match.finished ? tr('Finalizado', 'Finished') : tr('Pendiente', 'Pending')}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="p-4 text-[10px] font-black uppercase tracking-widest opacity-60">
+            {tr('Tabla contraida para reducir scroll. Usa el boton para verla.', 'Table collapsed to reduce scroll. Use the button to view it.')}
+          </p>
+        )}
       </div>
     </section>
   );

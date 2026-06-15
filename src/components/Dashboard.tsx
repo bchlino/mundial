@@ -27,7 +27,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
    const [view, setView] = useState<'grid' | 'table'>('grid');
    const [results, setResults] = useState<MatchResult[]>([]);
    const [resultsLoadError, setResultsLoadError] = useState<string | null>(null);
-   const [showMySquad, setShowMySquad] = useState(true);
+   const [showMySquad, setShowMySquad] = useState(false);
 
    // Resultados oficiales desde gist (sin dependencia de /matches en Firestore)
    useEffect(() => {
@@ -183,12 +183,12 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
         </div>
 
         {showMySquad ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 sm:gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-8">
            {myTeams.map(team => (
              <motion.div 
                key={team.id}
                className={cn(
-                         "relative p-5 sm:p-8 border-4 transition-all flex flex-col group min-h-72 sm:min-h-80",
+                                     "relative p-4 sm:p-8 border-4 transition-all flex flex-col group min-h-56 sm:min-h-80",
                  myPicks?.tapadoId === team.id 
                   ? "bg-black text-white border-black shadow-[12px_12px_0px_0px_rgba(255,62,0,1)]" 
                   : "bg-white border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
@@ -198,9 +198,9 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                   {team.pot}
                </div>
 
-               <div className="text-6xl mb-8 group-hover:scale-110 transition-transform origin-left">{team.flag}</div>
+                <div className="text-5xl sm:text-6xl mb-5 sm:mb-8 group-hover:scale-110 transition-transform origin-left">{team.flag}</div>
                       <span className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1 block">{tr('Nivel nacional', 'National tier')}</span>
-               <h3 className="text-3xl sm:text-4xl font-serif italic font-black uppercase mb-8 leading-none wrap-break-word">{team.name}</h3>
+                <h3 className="text-2xl sm:text-4xl font-serif italic font-black uppercase mb-5 sm:mb-8 leading-none wrap-break-word">{team.name}</h3>
                
                <div className="mt-auto pt-6 border-t-2 border-black/10">
                  <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest mb-4">
@@ -237,8 +237,8 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
              </motion.div>
            ))}
 
-           {Array.from({ length: 4 - myTeams.length }).map((_, i) => (
-             <div key={i} className="p-5 sm:p-8 border-4 border-dashed border-black/20 bg-black/5 flex flex-col items-center justify-center text-center gap-4 min-h-72 sm:min-h-80">
+                {Array.from({ length: 4 - myTeams.length }).map((_, i) => (
+                   <div key={i} className="p-4 sm:p-8 border-4 border-dashed border-black/20 bg-black/5 flex flex-col items-center justify-center text-center gap-3 sm:gap-4 min-h-56 sm:min-h-80">
                 <div className="w-12 h-12 border-2 border-black/20 flex items-center justify-center">
                    <Users className="w-6 h-6 opacity-20" />
                 </div>
@@ -302,7 +302,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
              )}
 
          {view === 'grid' ? (
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
                      {leaderboard.map((entry, idx) => {
                         const uid = entry.uid;
                 const userPicks = picks[uid];
@@ -319,43 +319,43 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                   <motion.div 
                     key={uid}
                     className={cn(
-                      "p-5 sm:p-8 border-4 transition-all relative",
+                      "p-4 sm:p-8 border-4 transition-all relative",
                       isMe ? "bg-white border-black shadow-[10px_10px_0px_0px_rgba(255,62,0,1)]" : "bg-white border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]"
                     )}
                   >
-                    <div className="absolute -top-4 -right-4 bg-black text-white px-3 py-1 font-serif italic text-xl border-2 border-white">
+                    <div className="absolute -top-4 -right-4 bg-black text-white px-2 sm:px-3 py-1 font-serif italic text-lg sm:text-xl border-2 border-white">
                        #{idx + 1}
                     </div>
 
-                    <div className="flex items-center gap-4 mb-8">
-                       <img src={users[uid]?.photoURL} className="w-12 h-12 border-2 border-black" referrerPolicy="no-referrer" />
+                    <div className="flex items-center gap-3 sm:gap-4 mb-5 sm:mb-8">
+                       <img src={users[uid]?.photoURL} className="w-10 h-10 sm:w-12 sm:h-12 border-2 border-black" referrerPolicy="no-referrer" />
                        <div>
-                          <h4 className="font-serif italic text-xl sm:text-2xl leading-none wrap-break-word">
+                          <h4 className="font-serif italic text-lg sm:text-2xl leading-none wrap-break-word">
                              {users[uid]?.displayName}
                           </h4>
                           <p className="text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{entry.points} {tr('PUNTOS', 'POINTS')}</p>
                        </div>
                     </div>
 
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 sm:gap-3">
                                   {canViewTeams ? (
                                      <>
                                         {teams.map(t => (
-                                           <div key={t.id} className="relative group cursor-help border-2 border-black p-2 bg-[#F5F2ED] flex-1 flex items-center justify-center">
-                                                <span className="text-3xl transition-all">{t.flag}</span>
+                                           <div key={t.id} className="relative group cursor-help border-2 border-black p-1.5 sm:p-2 bg-[#F5F2ED] flex-1 flex items-center justify-center min-h-10 sm:min-h-12">
+                                                <span className="text-2xl sm:text-3xl transition-all">{t.flag}</span>
                                            </div>
                                         ))}
                                         {hasHiddenTapado && (
-                                           <div className="relative flex-1 border-2 border-black p-2 bg-black flex items-center justify-center">
-                                              <Star className="w-5 h-5 text-[#FF3E00] fill-current" />
+                                           <div className="relative flex-1 border-2 border-black p-1.5 sm:p-2 bg-black flex items-center justify-center min-h-10 sm:min-h-12">
+                                              <Star className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF3E00] fill-current" />
                                            </div>
                                         )}
                                         {Array.from({ length: emptySlots }).map((_, i) => (
-                                           <div key={i} className="flex-1 h-12 bg-black/5 border-2 border-dashed border-black/10" />
+                                           <div key={i} className="flex-1 h-10 sm:h-12 bg-black/5 border-2 border-dashed border-black/10" />
                                         ))}
                                      </>
                                   ) : (
-                                     <div className="w-full h-12 border-2 border-dashed border-black/20 bg-black/5 flex items-center justify-center text-[10px] font-black uppercase tracking-widest opacity-50">
+                                     <div className="w-full h-10 sm:h-12 border-2 border-dashed border-black/20 bg-black/5 flex items-center justify-center text-[10px] font-black uppercase tracking-widest opacity-50">
                                         {tr('Picks ocultos', 'Hidden picks')}
                                      </div>
                                   )}
@@ -369,13 +369,13 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
               <table className="w-full min-w-215 text-left font-sans">
                  <thead>
                     <tr className="bg-black text-white text-[10px] font-black uppercase tracking-[0.2em]">
-                       <th className="px-8 py-4">{tr('Posicion', 'Rank')}</th>
-                       <th className="px-8 py-4">{tr('Jugador', 'Player')}</th>
-                       <th className="px-8 py-4">{tr('Bombo', 'Pot')} A</th>
-                       <th className="px-8 py-4">{tr('Bombo', 'Pot')} B</th>
-                       <th className="px-8 py-4">{tr('Bombo', 'Pot')} C</th>
-                       <th className="px-8 py-4">{tr('Bombo', 'Pot')} D</th>
-                       <th className="px-8 py-4 text-right">{tr('Total', 'Total')}</th>
+                       <th className="px-4 sm:px-8 py-3 sm:py-4">{tr('Posicion', 'Rank')}</th>
+                       <th className="px-4 sm:px-8 py-3 sm:py-4">{tr('Jugador', 'Player')}</th>
+                       <th className="px-4 sm:px-8 py-3 sm:py-4">{tr('Bombo', 'Pot')} A</th>
+                       <th className="px-4 sm:px-8 py-3 sm:py-4">{tr('Bombo', 'Pot')} B</th>
+                       <th className="px-4 sm:px-8 py-3 sm:py-4">{tr('Bombo', 'Pot')} C</th>
+                       <th className="px-4 sm:px-8 py-3 sm:py-4">{tr('Bombo', 'Pot')} D</th>
+                       <th className="px-4 sm:px-8 py-3 sm:py-4 text-right">{tr('Total', 'Total')}</th>
                     </tr>
                  </thead>
                  <tbody className="divide-y-2 divide-black/10">
@@ -397,35 +397,35 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
 
                       return (
                         <tr key={uid} className="hover:bg-[#F5F2ED] transition-colors group">
-                           <td className="px-8 py-6 font-serif italic text-xl">#{idx + 1}</td>
-                           <td className="px-8 py-6">
-                              <div className="flex items-center gap-4">
-                                 <img src={users[uid]?.photoURL} className="w-10 h-10 border-2 border-black" />
-                                 <span className="font-serif italic text-xl">{users[uid]?.displayName}</span>
+                           <td className="px-4 sm:px-8 py-4 sm:py-6 font-serif italic text-lg sm:text-xl">#{idx + 1}</td>
+                           <td className="px-4 sm:px-8 py-4 sm:py-6">
+                              <div className="flex items-center gap-3 sm:gap-4">
+                                 <img src={users[uid]?.photoURL} className="w-8 h-8 sm:w-10 sm:h-10 border-2 border-black" />
+                                 <span className="font-serif italic text-base sm:text-xl">{users[uid]?.displayName}</span>
                               </div>
                            </td>
-                           <td className="px-8 py-6">
+                           <td className="px-4 sm:px-8 py-4 sm:py-6">
                               <div className="flex items-center gap-2">
-                                 <span className="text-3xl">{!canViewTeams ? '🔒' : (tA?.flag || (hiddenTapadoPot === 'A' ? '🕵️' : '—'))}</span>
+                                 <span className="text-2xl sm:text-3xl">{!canViewTeams ? '🔒' : (tA?.flag || (hiddenTapadoPot === 'A' ? '🕵️' : '—'))}</span>
                               </div>
                            </td>
-                           <td className="px-8 py-6">
+                           <td className="px-4 sm:px-8 py-4 sm:py-6">
                               <div className="flex items-center gap-2">
-                                 <span className="text-3xl">{!canViewTeams ? '🔒' : (tB?.flag || (hiddenTapadoPot === 'B' ? '🕵️' : '—'))}</span>
+                                 <span className="text-2xl sm:text-3xl">{!canViewTeams ? '🔒' : (tB?.flag || (hiddenTapadoPot === 'B' ? '🕵️' : '—'))}</span>
                               </div>
                            </td>
-                           <td className="px-8 py-6">
+                           <td className="px-4 sm:px-8 py-4 sm:py-6">
                               <div className="flex items-center gap-2">
-                                 <span className="text-3xl">{!canViewTeams ? '🔒' : (tC?.flag || (hiddenTapadoPot === 'C' ? '🕵️' : '—'))}</span>
+                                 <span className="text-2xl sm:text-3xl">{!canViewTeams ? '🔒' : (tC?.flag || (hiddenTapadoPot === 'C' ? '🕵️' : '—'))}</span>
                               </div>
                            </td>
-                           <td className="px-8 py-6">
+                           <td className="px-4 sm:px-8 py-4 sm:py-6">
                               <div className="flex items-center gap-2">
-                                 <span className="text-3xl">{!canViewTeams ? '🔒' : (tD?.flag || (hiddenTapadoPot === 'D' ? '🕵️' : '—'))}</span>
+                                 <span className="text-2xl sm:text-3xl">{!canViewTeams ? '🔒' : (tD?.flag || (hiddenTapadoPot === 'D' ? '🕵️' : '—'))}</span>
                               </div>
                            </td>
-                           <td className="px-8 py-6 text-right">
-                              <span className="font-serif italic font-black text-[#FF3E00] text-3xl">{entry.points}</span>
+                           <td className="px-4 sm:px-8 py-4 sm:py-6 text-right">
+                              <span className="font-serif italic font-black text-[#FF3E00] text-2xl sm:text-3xl">{entry.points}</span>
                            </td>
                         </tr>
                       );
