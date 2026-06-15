@@ -246,19 +246,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
              </div>
            ))}
         </div>
-        ) : (
-           <div className="border-4 border-black bg-[#F5F2ED] p-8 sm:p-10 text-center">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-3">
-                 {tr('Vista protegida', 'Protected view')}
-              </p>
-              <p className="text-2xl sm:text-3xl font-serif italic font-black uppercase leading-tight">
-                 {tr('Tu plantilla esta oculta', 'Your squad is hidden')}
-              </p>
-              <p className="text-[10px] font-black uppercase tracking-widest opacity-50 mt-3">
-                 {tr('Pulsa mostrar plantilla cuando quieras verla de nuevo.', 'Press show squad whenever you want to see it again.')}
-              </p>
-           </div>
-        )}
+        ) : null}
       </section>
 
       {/* Participants Feed */}

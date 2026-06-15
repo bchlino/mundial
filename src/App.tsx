@@ -269,6 +269,7 @@ function AppContent() {
   const adminLeaguesCount = leagues.filter((league: LeagueData) => league.adminId === user?.uid).length;
   const currentLeagueRevealDate = leagueRevealDate(currentLeague);
   const isPickLocked = currentLeagueRevealDate ? Date.now() >= currentLeagueRevealDate.getTime() : false;
+  const canUsePreStartActions = !currentLeague || !isPickLocked;
 
   useEffect(() => {
     if (!currentLeague) {
@@ -395,20 +396,22 @@ function AppContent() {
                 <p className="text-[10px] font-black uppercase tracking-[0.25em] opacity-60">{tr('Liga actual', 'Current league')}</p>
                 <h2 className="mt-2 text-xl sm:text-2xl font-black uppercase tracking-wide">{currentLeague.name || currentLeague.id}</h2>
               </div>
-              <button
-                type="button"
-                onClick={handleCopyInviteLink}
-                className="border-2 border-black px-4 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-colors self-start"
-              >
-                {tr('Copiar enlace de invitacion', 'Copy invite link')}
-              </button>
+              {canUsePreStartActions && (
+                <button
+                  type="button"
+                  onClick={handleCopyInviteLink}
+                  className="border-2 border-black px-4 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-colors self-start"
+                >
+                  {tr('Copiar enlace de invitacion', 'Copy invite link')}
+                </button>
+              )}
             </div>
             {currentLeagueRevealDate && (
               <p className="mt-2 text-[10px] font-black uppercase tracking-widest opacity-60">
                 {tr('Publicacion picks', 'Picks publish')}: {currentLeagueRevealDate.toLocaleString()}
               </p>
             )}
-            {inviteCopyStatus && (
+            {canUsePreStartActions && inviteCopyStatus && (
               <p className="mt-2 text-[10px] font-black uppercase tracking-widest opacity-70">{inviteCopyStatus}</p>
             )}
           </div>
@@ -434,49 +437,51 @@ function AppContent() {
           </div>
         )}
 
-        <div className="mb-10 border-4 border-black bg-white p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-2">{tr('Crear liga privada', 'Create private league')}</p>
-              <p className="text-xs font-black uppercase tracking-widest opacity-60">
-                {tr('Ligas administradas', 'Admin leagues')}: {adminLeaguesCount}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setShowCreateLeagueForm((prev) => !prev);
-                setCreateError(null);
-              }}
-              className="border-2 border-black px-4 py-2 text-[10px] sm:text-xs font-black uppercase tracking-widest hover:bg-black hover:text-white transition-colors"
-            >
-              {showCreateLeagueForm ? tr('Ocultar formulario', 'Hide form') : tr('Nueva liga', 'New league')}
-            </button>
-          </div>
-
-          {showCreateLeagueForm && (
-            <div className="mt-4 flex flex-col sm:flex-row gap-3">
-              <input
-                type="text"
-                value={newLeagueName}
-                onChange={(event) => setNewLeagueName(event.target.value)}
-                placeholder={`Liga Mundial ${profile?.displayName || 'Mi Grupo'}`}
-                className="flex-1 border-4 border-black p-4 text-sm font-black uppercase tracking-wider focus:outline-none"
-              />
+        {canUsePreStartActions && (
+          <div className="mb-10 border-4 border-black bg-white p-6">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-2">{tr('Crear liga privada', 'Create private league')}</p>
+                <p className="text-xs font-black uppercase tracking-widest opacity-60">
+                  {tr('Ligas administradas', 'Admin leagues')}: {adminLeaguesCount}
+                </p>
+              </div>
               <button
-                onClick={handleCreateLeague}
-                disabled={isCreatingLeague || !newLeagueName.trim()}
-                className="bg-black text-white px-6 py-4 text-sm font-black uppercase tracking-widest hover:bg-[#FF3E00] transition-all disabled:opacity-50"
+                type="button"
+                onClick={() => {
+                  setShowCreateLeagueForm((prev) => !prev);
+                  setCreateError(null);
+                }}
+                className="border-2 border-black px-4 py-2 text-[10px] sm:text-xs font-black uppercase tracking-widest hover:bg-black hover:text-white transition-colors"
               >
-                {isCreatingLeague ? tr('Creando liga...', 'Creating league...') : tr('Crear liga', 'Create league')}
+                {showCreateLeagueForm ? tr('Ocultar formulario', 'Hide form') : tr('Nueva liga', 'New league')}
               </button>
             </div>
-          )}
 
-          {createError && (
-            <p className="mt-3 text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{createError}</p>
-          )}
-        </div>
+            {showCreateLeagueForm && (
+              <div className="mt-4 flex flex-col sm:flex-row gap-3">
+                <input
+                  type="text"
+                  value={newLeagueName}
+                  onChange={(event) => setNewLeagueName(event.target.value)}
+                  placeholder={`Liga Mundial ${profile?.displayName || 'Mi Grupo'}`}
+                  className="flex-1 border-4 border-black p-4 text-sm font-black uppercase tracking-wider focus:outline-none"
+                />
+                <button
+                  onClick={handleCreateLeague}
+                  disabled={isCreatingLeague || !newLeagueName.trim()}
+                  className="bg-black text-white px-6 py-4 text-sm font-black uppercase tracking-widest hover:bg-[#FF3E00] transition-all disabled:opacity-50"
+                >
+                  {isCreatingLeague ? tr('Creando liga...', 'Creating league...') : tr('Crear liga', 'Create league')}
+                </button>
+              </div>
+            )}
+
+            {createError && (
+              <p className="mt-3 text-[10px] font-black uppercase tracking-widest text-[#FF3E00]">{createError}</p>
+            )}
+          </div>
+        )}
 
         {leagues.length > 1 && (
           <div className="mb-10 border-4 border-black bg-white p-6">
