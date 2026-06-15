@@ -40,6 +40,7 @@ const TEAM_ALIASES = {
   croacia: "croatia",
   usa: "usa",
   unitedstates: "usa",
+  unitedstatesofamerica: "usa",
   eeuu: "usa",
   japan: "japan",
   japon: "japan",
@@ -83,12 +84,22 @@ const TEAM_ALIASES = {
   arabiasaudita: "saudi-arabia",
   iraq: "iraq",
   uzbekistan: "uzbekistan",
+  jordan: "jordan",
+  jordania: "jordan",
+  hashemitekingdomofjordan: "jordan",
+
+  // NUEVOS
   capeverde: "cape-verde",
+  capeverdeislands: "cape-verde",
   caboverde: "cape-verde",
+
   drcongo: "rd-congo",
   rdcongo: "rd-congo",
-  jordan: "jordan",
+  democraticrepublicofthecongo: "rd-congo",
+
   bosnia: "bosnia",
+  bosniaandherzegovina: "bosnia",
+
   southafrica: "south-africa",
   sudafrica: "south-africa",
   ghana: "ghana",
@@ -100,7 +111,26 @@ const TEAM_ALIASES = {
 };
 
 function mapTeamNameToId(name) {
-  return TEAM_ALIASES[normalizeName(name)] || null;
+  const normalized = normalizeName(name);
+
+  if (TEAM_ALIASES[normalized]) {
+    return TEAM_ALIASES[normalized];
+  }
+
+  // Fallbacks por si football-data cambia el nombre oficial
+  if (normalized.includes("bosnia")) {
+    return "bosnia";
+  }
+
+  if (normalized.includes("capeverde")) {
+    return "cape-verde";
+  }
+
+  if (normalized.includes("congo")) {
+    return "rd-congo";
+  }
+
+  return null;
 }
 
 function mapStage(stageValue) {
