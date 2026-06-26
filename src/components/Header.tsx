@@ -1,21 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useAuth } from '../lib/AuthContext';
 import { signInWithGoogle, logout } from '../lib/firebase';
-import { LogOut, LogIn, User as UserIcon, Check } from 'lucide-react';
+import { LogOut, LogIn, User as UserIcon } from 'lucide-react';
 import { useLanguage } from '../lib/LanguageContext';
 
 export const Header: React.FC = () => {
-  const { user, profile, updateProfile } = useAuth();
+  const { user, profile } = useAuth();
   const { language, setLanguage, tr } = useLanguage();
-  const [isEditing, setIsEditing] = useState(false);
-  const [newName, setNewName] = useState('');
-
-  const handleUpdate = async () => {
-    if (newName.trim()) {
-      await updateProfile(newName.toUpperCase());
-      setIsEditing(false);
-    }
-  };
 
   return (
     <header className="bg-[#F5F2ED] text-[#1A1A1A] border-b-2 border-[#1A1A1A] mx-2 sm:mx-8 lg:mx-12">
@@ -42,35 +33,9 @@ export const Header: React.FC = () => {
           {user ? (
             <div className="flex items-center gap-3 sm:gap-6 max-w-full">
               <div className="text-right hidden sm:block">
-                {isEditing ? (
-                  <div className="flex items-center gap-2">
-                    <input 
-                      autoFocus
-                      className="text-xl font-serif italic border-b-2 border-black bg-transparent outline-none w-32 px-1 text-right"
-                      value={newName}
-                      onChange={(e) => setNewName(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleUpdate()}
-                      onBlur={() => !newName.trim() && setIsEditing(false)}
-                    />
-                    <button 
-                      onClick={handleUpdate}
-                      className="bg-black text-white p-1 hover:bg-[#FF3E00] transition-colors"
-                    >
-                      <Check className="w-3 h-3" />
-                    </button>
-                  </div>
-                ) : (
-                  <div
-                    onClick={() => {
-                      setNewName(profile?.displayName || '');
-                      setIsEditing(true);
-                    }}
-                    className="font-serif italic text-2xl tracking-tight leading-none group cursor-pointer hover:text-[#FF3E00] transition-colors truncate max-w-70"
-                    title={tr('Editar nombre', 'Edit name')}
-                  >
-                    {profile?.displayName?.split(' ')[0] || tr('Jugador', 'Player')} <span className="text-xs uppercase font-sans not-italic font-black border-2 border-black px-2 py-0.5 ml-1">{tr('Cambiar', 'Change')}</span>
-                  </div>
-                )}
+                <div className="font-serif italic text-2xl tracking-tight leading-none truncate max-w-70">
+                  {profile?.displayName?.split(' ')[0] || tr('Jugador', 'Player')}
+                </div>
                 <div className="text-[10px] font-black uppercase opacity-60 mt-1">{profile?.email || tr('Acceso con Google', 'Google access')}</div>
               </div>
               <div className="flex items-center gap-2 sm:gap-3 shrink-0">
