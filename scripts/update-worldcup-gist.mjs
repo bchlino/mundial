@@ -237,6 +237,20 @@ function transformMatches(rawMatches) {
       continue;
     }
 
+    // --- NUEVA LÓGICA PARA DETECTAR EL GANADOR REAL EN ELIMINATORIAS ---
+    let winner = undefined;
+    const apiWinner = item?.score?.winner; // Puede ser 'HOME_TEAM', 'AWAY_TEAM' o 'DRAW'
+    const isFinished = String(item?.status || "") === "FINISHED";
+
+    if (isFinished && apiWinner) {
+      if (apiWinner === "HOME_TEAM") {
+        winner = homeTeam; // Almacena el ID interno (ej: 'brazil')
+      } else if (apiWinner === "AWAY_TEAM") {
+        winner = awayTeam; // Almacena el ID interno (ej: 'japan')
+      }
+    }
+    // ------------------------------------------------------------------
+
     transformed.push({
       id: `fd-${apiFixtureId}`,
       homeTeam,
@@ -244,7 +258,8 @@ function transformMatches(rawMatches) {
       homeGoals: toNumber(item?.score?.fullTime?.home),
       awayGoals: toNumber(item?.score?.fullTime?.away),
       stage: mapStage(item?.stage),
-      finished: String(item?.status || "") === "FINISHED",
+      finished: isFinished,
+      winner, // <-- Se añade de forma dinámica al Gist solo si el partido terminó
     });
   }
 
