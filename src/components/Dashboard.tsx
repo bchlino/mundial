@@ -95,21 +95,43 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
 
    // Calcula puntos para un equipo
    function calcTeamPoints(teamId: string, tapadoId?: string) {
+      // 1. Puntos base acumulados en todos los partidos (Grupos + Eliminatorias)
       let pts = results.reduce((acc, match) => acc + getMatchPoints(teamId, match), 0);
-      // Tapado: duplica puntos en KO, penaliza si eliminado
+
+      // 2. Lógica especial del Tapado (Wildcard)
       if (tapadoId && teamId === tapadoId) {
-         let tapadoPts = 0;
-         let eliminado = false;
-         for (const match of results) {
-            if (match.stage !== 'groups' && (match.homeTeam === teamId || match.awayTeam === teamId)) {
-               const win = getMatchPoints(teamId, match) > 0;
-               if (win) tapadoPts += getMatchPoints(teamId, match); // suma normal
-               else eliminado = true;
+         let tapadoBonusEliminatorias = 0;
+         let haSidoEliminado = false;
+
+         // Ordenamos o filtramos los partidos finalizados de la fase eliminatoria
+         const partidosEliminatoria = results.filter(
+            match => match.stage !== 'groups' && 
+                     match.finished && 
+                     (match.homeTeam === teamId || match.awayTeam === teamId)
+         );
+
+         for (const match of partidosEliminatoria) {
+            // Validamos explícitamente si el equipo avanzó usando el nuevo campo 'winner' del Gist
+            const avanzaRonda = match.winner === teamId;
+
+            if (avanzaRonda) {
+               // Duplica los puntos obtenidos en este partido de eliminatoria
+               tapadoBonusEliminatorias += getMatchPoints(teamId, match);
+            } else {
+               // Si jugó el partido, terminó y el ganador no es él -> Queda eliminado de la competición
+               haSidoEliminado = true;
             }
          }
-         pts += tapadoPts; // duplica KO
-         if (eliminado) pts -= 5;
+
+         // Añadimos el bonus por avanzar (duplica los puntos de KO)
+         pts += tapadoBonusEliminatorias;
+
+         // Si ha sido eliminado en cualquier parte de la fase eliminatoria, se le restan 5 puntos una sola vez
+         if (haSidoEliminado) {
+            pts -= 5;
+         }
       }
+
       return pts;
    }
 
@@ -117,6 +139,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
    function calcUserPoints(userId: string) {
       const userPicks = picks[userId];
       if (!userPicks?.teamIds) return 0;
+      // Importante pasar correctamente el tapadoId correspondiente a los picks de ESTE usuario específico
       return userPicks.teamIds.reduce((acc: number, tid: string) => acc + calcTeamPoints(tid, userPicks.tapadoId), 0);
    }
 
