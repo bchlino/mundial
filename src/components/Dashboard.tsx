@@ -95,41 +95,54 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
 
    // Calcula puntos para un equipo
    function calcTeamPoints(teamId: string, tapadoId?: string) {
-      // 1. Puntos base acumulados en todos los partidos (Grupos + Eliminatorias)
-      let pts = results.reduce((acc, match) => acc + getMatchPoints(teamId, match), 0);
+      let pts = 0;
+      const esTapado = tapadoId && teamId === tapadoId;
 
-      // 2. Lógica especial del Tapado (Wildcard)
-      if (tapadoId && teamId === tapadoId) {
-         let tapadoBonusEliminatorias = 0;
-         let haSidoEliminado = false;
+      // 1. PROCESAR PARTIDOS DE FASE DE GRUPOS
+      const partidosGrupos = results.filter(m => m.stage === 'groups' && m.finished);
+      for (const match of partidosGrupos) {
+         pts += getMatchPoints(teamId, match);
+      }
 
-         // Ordenamos o filtramos los partidos finalizados de la fase eliminatoria
-         const partidosEliminatoria = results.filter(
-            match => match.stage !== 'groups' && 
-                     match.finished && 
-                     (match.homeTeam === teamId || match.awayTeam === teamId)
-         );
+      // 2. PROCESAR FASES ELIMINATORIAS Y FINALES
+      const partidosEliminatorias = results.filter(m => m.stage !== 'groups' && m.finished);
+      
+      let haSidoEliminado = false;
+      let jugoAlgunaEliminatoria = false;
 
-         for (const match of partidosEliminatoria) {
-            // Validamos explícitamente si el equipo avanzó usando el nuevo campo 'winner' del Gist
+      for (const match of partidosEliminatorias) {
+         const esLocal = match.homeTeam === teamId;
+         const esVisitante = match.awayTeam === teamId;
+
+         // Si el equipo participó en este partido eliminatorio
+         if (esLocal || esVisitante) {
+            jugoAlgunaEliminatoria = true;
+            
+            // Comprobamos si es el ganador oficial usando el campo 'winner' del Gist
             const avanzaRonda = match.winner === teamId;
 
             if (avanzaRonda) {
-               // Duplica los puntos obtenidos en este partido de eliminatoria
-               tapadoBonusEliminatorias += getMatchPoints(teamId, match);
+               // Obtenemos los puntos base que otorga esta ronda por avanzar
+               const puntosBaseRonda = getMatchPoints(teamId, match);
+               
+               if (esTapado) {
+                  // Si es el tapado, DUPLICA los puntos de la ronda (Puntos Base * 2)
+                  pts += puntosBaseRonda * 2;
+               } else {
+                  // Si es un equipo normal, suma los puntos de la ronda de forma normal
+                  pts += puntosBaseRonda;
+               }
             } else {
-               // Si jugó el partido, terminó y el ganador no es él -> Queda eliminado de la competición
+               // Si participó pero no es el ganador del encuentro, ha quedado fuera
                haSidoEliminado = true;
             }
          }
+      }
 
-         // Añadimos el bonus por avanzar (duplica los puntos de KO)
-         pts += tapadoBonusEliminatorias;
-
-         // Si ha sido eliminado en cualquier parte de la fase eliminatoria, se le restan 5 puntos una sola vez
-         if (haSidoEliminado) {
-            pts -= 5;
-         }
+      // 3. APLICAR PENALIZACIÓN AL TAPADO
+      // Solo se aplica si el tapado ha sido eliminado físicamente en alguna ronda de Playoff
+      if (esTapado && haSidoEliminado) {
+         pts -= 5;
       }
 
       return pts;
