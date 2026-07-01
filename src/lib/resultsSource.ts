@@ -38,6 +38,7 @@ function parseMatch(raw: any, index: number): MatchResult {
     awayTeam: String(raw?.awayTeam || ''),
     homeGoals: toNumber(raw?.homeGoals ?? raw?.homeScore),
     awayGoals: toNumber(raw?.awayGoals ?? raw?.awayScore),
+    winner: typeof raw?.winner === 'string' && raw.winner.trim() ? String(raw.winner).trim() : undefined,
     stage: normalizeStage(raw?.stage),
     finished: typeof raw?.finished === 'boolean' ? raw.finished : true,
   };

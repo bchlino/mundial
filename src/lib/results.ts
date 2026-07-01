@@ -6,6 +6,7 @@ export interface MatchResult {
   awayTeam: string; // id equipo
   homeGoals: number;
   awayGoals: number;
+  winner?: string; // id equipo ganador (recomendado en eliminatorias)
   stage: 'groups' | 'round32' | 'round16' | 'quarters' | 'semis' | 'final';
   finished: boolean;
 }
@@ -31,11 +32,17 @@ export function getMatchPoints(teamId: string, match: MatchResult): number {
   }
   // Eliminatorias
   else {
-    if (match.stage === 'round32') points += goalsFor > goalsAgainst ? 4 : 0;
-    else if (match.stage === 'round16') points += goalsFor > goalsAgainst ? 6 : 0;
-    else if (match.stage === 'quarters') points += goalsFor > goalsAgainst ? 8 : 0;
-    else if (match.stage === 'semis') points += goalsFor > goalsAgainst ? 10 : 0;
-    else if (match.stage === 'final') points += goalsFor > goalsAgainst ? 12 : 0;
+    const winnerByGoals = match.homeGoals !== match.awayGoals
+      ? (match.homeGoals > match.awayGoals ? match.homeTeam : match.awayTeam)
+      : undefined;
+    const winnerId = match.winner || winnerByGoals;
+    const advances = winnerId === teamId;
+
+    if (match.stage === 'round32') points += advances ? 4 : 0;
+    else if (match.stage === 'round16') points += advances ? 6 : 0;
+    else if (match.stage === 'quarters') points += advances ? 8 : 0;
+    else if (match.stage === 'semis') points += advances ? 10 : 0;
+    else if (match.stage === 'final') points += advances ? 12 : 0;
   }
   return points;
 }

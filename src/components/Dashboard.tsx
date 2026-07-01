@@ -117,9 +117,14 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
          // Si el equipo participó en este partido eliminatorio
          if (esLocal || esVisitante) {
             jugoAlgunaEliminatoria = true;
-            
-            // Comprobamos si es el ganador oficial usando el campo 'winner' del Gist
-            const avanzaRonda = match.winner === teamId;
+
+            const winnerByGoals = match.homeGoals !== match.awayGoals
+               ? (match.homeGoals > match.awayGoals ? match.homeTeam : match.awayTeam)
+               : undefined;
+            const winnerId = match.winner || winnerByGoals;
+
+            // Solo marcamos eliminado si existe ganador definido y no es este equipo.
+            const avanzaRonda = winnerId === teamId;
 
             if (avanzaRonda) {
                // Obtenemos los puntos base que otorga esta ronda por avanzar
@@ -133,8 +138,10 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                   pts += puntosBaseRonda;
                }
             } else {
-               // Si participó pero no es el ganador del encuentro, ha quedado fuera
-               haSidoEliminado = true;
+               // Evita falsas eliminaciones cuando el ganador no viene informado (p. ej. empates sin winner).
+               if (winnerId) {
+                  haSidoEliminado = true;
+               }
             }
          }
       }
