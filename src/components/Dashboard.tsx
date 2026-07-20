@@ -343,7 +343,7 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
     ? (userPicks?.teamIds || [])
     : [];
                         const teams = WORLD_CUP_TEAMS.filter(t => visibleTeamIds.includes(t.id));
-                        const hasHiddenTapado = canViewTeams && !!userPicks?.tapadoId && (userPicks?.teamIds || []).includes(userPicks.tapadoId);
+                        const hasHiddenTapado = false;
                         const emptySlots = Math.max(0, 4 - teams.length - (hasHiddenTapado ? 1 : 0));
 
                 return (
@@ -376,11 +376,11 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                                                 <span className="text-2xl sm:text-3xl transition-all">{t.flag}</span>
                                            </div>
                                         ))}
-                                        /* {hasHiddenTapado && (
+                                        {hasHiddenTapado && (
                                            <div className="relative flex-1 border-2 border-black p-1.5 sm:p-2 bg-black flex items-center justify-center min-h-10 sm:min-h-12">
                                               <Star className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF3E00] fill-current" />
                                            </div>
-                                        )} */
+                                        )}
                                         {Array.from({ length: emptySlots }).map((_, i) => (
                                            <div key={i} className="flex-1 h-10 sm:h-12 bg-black/5 border-2 border-dashed border-black/10" />
                                         ))}
