@@ -340,8 +340,8 @@ export const Dashboard: React.FC<{ league: LeagueData }> = ({ league }) => {
                 const isMe = uid === user?.uid;
                         const canViewTeams = isMe || !hideOpponentTeams;
                         const visibleTeamIds = canViewTeams
-                           ? (userPicks?.teamIds || []).filter((teamId: string) => teamId !== userPicks?.tapadoId)
-                           : [];
+    ? (userPicks?.teamIds || [])
+    : [];
                         const teams = WORLD_CUP_TEAMS.filter(t => visibleTeamIds.includes(t.id));
                         const hasHiddenTapado = canViewTeams && !!userPicks?.tapadoId && (userPicks?.teamIds || []).includes(userPicks.tapadoId);
                         const emptySlots = Math.max(0, 4 - teams.length - (hasHiddenTapado ? 1 : 0));
